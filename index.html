@@ -61,7 +61,7 @@
       transition: transform 0.2s; flex-shrink: 0; padding: 0;
     }
     .btn-sync:active { transform: scale(0.95); }
-    .refresh-btn.spin { animation: spin 1s linear infinite; }
+    .btn-sync.spin { animation: spin 1s linear infinite; }
     .btn-sync svg { width: 24px; height: 24px; pointer-events: none; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -205,15 +205,11 @@
       cursor: pointer; transition: all 0.2s; touch-action: manipulation;
     }
     .view-btn.active { border-color: #667eea; background: #667eea; color: white; }
-    #syncBtn { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    #syncBtn:active { opacity: 0.6; }
     .nav-tab {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
       background: none; border: none; padding: 5px 20px; cursor: pointer;
       color: #aaa; transition: color 0.2s; touch-action: manipulation;
     }
-    .nav-tab .icon { pointer-events: none; }
-    .nav-tab .label { pointer-events: none; }
     .nav-tab.active { color: #667eea; }
     .nav-tab .icon { font-size: 18px; line-height: 1; }
     .nav-tab .label { font-size: 9px; font-weight: 600; }
@@ -378,7 +374,7 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="4" width="18" height="17" rx="3"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/><line x1="3" y1="9" x2="21" y2="9"/><circle cx="8" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="12" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="16" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="8" cy="17" r="0.7" fill="currentColor" stroke="none"/><path d="M12 18.3C11.2 17.6 10 16.8 10 15.7C10 14.9 10.6 14.3 11.4 14.3C11.9 14.3 12.3 14.6 12.5 15C12.7 14.6 13.1 14.3 13.6 14.3C14.4 14.3 15 14.9 15 15.7C15 16.8 13.8 17.6 13 18.3Z" fill="#EF4444" stroke="none"/><circle cx="16" cy="17" r="0.7" fill="currentColor" stroke="none"/></svg></h1>
+      <h1>📅</h1>
       <div class="header-actions">
         <button class="btn-add" onclick="openModal()">+ Добавить</button>
       </div>
@@ -422,23 +418,13 @@
     </div>
     <div class="bottom-nav">
       <button class="nav-tab active" onclick="switchView('calendar')" id="tab-calendar">
-        <span class="icon">📅</span>
-        <span class="label">Календарь</span>
+        <span class="icon" style="font-size:24px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/><line x1="3" y1="9" x2="21" y2="9"/><circle cx="8" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="12" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="16" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="8" cy="17" r="0.7" fill="currentColor" stroke="none"/><path d="M12 18.3C11.2 17.6 10 16.8 10 15.7C10 14.9 10.6 14.3 11.4 14.3C11.9 14.3 12.3 14.6 12.5 15C12.7 14.6 13.1 14.3 13.6 14.3C14.4 14.3 15 14.9 15 15.7C15 16.8 13.8 17.6 13 18.3Z" fill="#EF4444" stroke="none"/><circle cx="16" cy="17" r="0.7" fill="currentColor" stroke="none"/></svg></span>
       </button>
-      <button class="refresh-btn nav-tab" onclick="loadFromSheet()" id="syncBtn" title="Обновить планы">
-        <svg width="20" height="20" viewBox="0 0 24 24"
-             fill="none"
-             stroke="currentColor"
-             stroke-width="1.8"
-             stroke-linecap="round"
-             stroke-linejoin="round">
-          <path d="M21 2v6h-6"/>
-          <path d="M20.49 9A9 9 0 1 0 21 12"/>
-        </svg>
+      <button class="refresh-btn btn-sync nav-tab" onclick="loadFromSheet()" id="syncBtn" title="Обновить">
+        <span class="icon" id="syncIcon" style="font-size:24px;">🔄</span>
       </button>
       <button class="nav-tab" onclick="switchView('ideas')" id="tab-ideas">
-        <span class="icon">💡</span>
-        <span class="label">Идеи</span>
+        <span class="icon" style="font-size:24px;">📌</span>
       </button>
     </div>
   </div>
@@ -524,7 +510,7 @@
   <!-- === JS === -->
   <!-- ============================================ -->
   <script>
-    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function pad(n) { return n < 10 ? "0" + n : "" + n; }
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJmh7pS1As7WqGtj0nNxj1TDIh_6uWbsCFjCpph67FtF_di28htOKa4xdsq3EyZ5mHSw/exec';
 
     // Базовые категории
@@ -845,7 +831,7 @@
       const month = currentDate.getMonth();
       const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь',
                           'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-      document.getElementById('monthTitle').textContent = `${monthNames[month]} ${year}`;
+      document.getElementById('monthTitle').textContent = monthNames[month] + ' ' + year;
 
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -949,6 +935,7 @@
       const tabIdeas = document.getElementById('tab-ideas');
       const monthNav = document.getElementById('monthNav');
       const app = document.getElementById('app');
+      const viewSwitcher = document.getElementById('viewSwitcher');
 
       localStorage.setItem('lastView', view);
 
@@ -959,6 +946,7 @@
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
         app.classList.remove('view-ideas-active');
+        if (viewSwitcher) viewSwitcher.style.display = 'flex';
       } else {
         calendarView.style.display = 'none';
         ideasView.classList.add('active');
@@ -966,6 +954,7 @@
         tabIdeas.classList.add('active');
         monthNav.classList.add('hidden');
         app.classList.add('view-ideas-active');
+        if (viewSwitcher) viewSwitcher.style.display = 'none';
         renderIdeas();
       }
     }
@@ -998,6 +987,20 @@
       var month = currentDate.getMonth();
       var day = currentDate.getDate();
       var startOfWeek = new Date(year, month, day - ((new Date(year, month, day).getDay() + 6) % 7));
+      var endOfWeek = new Date(startOfWeek.getTime() + 6 * 86400000);
+      var monthNames = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+      var startMonth = monthNames[startOfWeek.getMonth()];
+      var endMonth = monthNames[endOfWeek.getMonth()];
+      var startDay = startOfWeek.getDate();
+      var endDay = endOfWeek.getDate();
+      var weekRange;
+      if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
+        weekRange = startDay + ' – ' + endDay + ' ' + endMonth + ' ' + endOfWeek.getFullYear();
+      } else {
+        weekRange = startDay + ' ' + startMonth + ' – ' + endDay + ' ' + endMonth + ' ' + endOfWeek.getFullYear();
+      }
+      document.getElementById('monthTitle').textContent = weekRange;
+
       var weekRow = document.createElement('div');
       weekRow.className = 'week-row';
       weekRow.style.flex = '1';
@@ -1029,30 +1032,61 @@
       var calendarBody = document.getElementById('calendarBody');
       calendarBody.innerHTML = '';
       var year = currentDate.getFullYear();
-      var monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+      document.getElementById('monthTitle').textContent = year;
+      var monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
       var grid = document.createElement('div');
       grid.style.display = 'grid';
       grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
-      grid.style.gap = '8px';
+      grid.style.gap = '12px';
       grid.style.padding = '12px';
       grid.style.flex = '1';
       grid.style.overflow = 'auto';
       for (var m = 0; m < 12; m++) {
         var monthCard = document.createElement('div');
         monthCard.style.border = '1px solid #e8e8e8';
-        monthCard.style.borderRadius = '8px';
-        monthCard.style.padding = '8px';
-        monthCard.style.cursor = 'pointer';
+        monthCard.style.borderRadius = '10px';
+        monthCard.style.padding = '10px';
         monthCard.style.background = '#fff';
-        monthCard.style.transition = 'background 0.2s';
-        monthCard.onmouseenter = function() { this.style.background = '#f5f5f5'; };
-        monthCard.onmouseleave = function() { this.style.background = '#fff'; };
-        var prefix = year + '-' + pad(m+1);
-        var monthEvents = 0;
-        for (var e = 0; e < events.length; e++) {
-          if (events[e].date && events[e].date.indexOf(prefix) === 0) monthEvents++;
+        monthCard.style.cursor = 'pointer';
+        monthCard.style.transition = 'all 0.2s';
+        monthCard.onmouseenter = function() { this.style.background = '#f8f8ff'; this.style.borderColor = '#667eea'; };
+        monthCard.onmouseleave = function() { this.style.background = '#fff'; this.style.borderColor = '#e8e8e8'; };
+        var firstDay = new Date(year, m, 1);
+        var lastDay = new Date(year, m + 1, 0);
+        var daysInMonth = lastDay.getDate();
+        var startDayOfWeek = (firstDay.getDay() + 6) % 7;
+        var today = new Date();
+        var todayStr = today.getFullYear() + '-' + pad(today.getMonth()+1) + '-' + pad(today.getDate());
+        var miniCalendar = '<div style="font-weight:700;font-size:12px;color:#333;margin-bottom:8px;text-align:center;">' + monthNames[m] + '</div>';
+        miniCalendar += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:9px;color:#999;margin-bottom:4px;">';
+        var wd = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+        for (var w = 0; w < 7; w++) {
+          miniCalendar += '<div>' + wd[w] + '</div>';
         }
-        monthCard.innerHTML = "<div style=\"font-weight:700;font-size:13px;color:#333;margin-bottom:4px;\">" + monthNames[m] + "</div><div style=\"font-size:11px;color:#888;\">" + monthEvents + " событий</div>";
+        miniCalendar += '</div>';
+        miniCalendar += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;">';
+        for (var empty = 0; empty < startDayOfWeek; empty++) {
+          miniCalendar += '<div style="height:20px;"></div>';
+        }
+        for (var d = 1; d <= daysInMonth; d++) {
+          var dateStr = year + '-' + pad(m+1) + '-' + pad(d);
+          var hasEvents = false;
+          for (var e = 0; e < events.length; e++) {
+            if (events[e].date === dateStr) { hasEvents = true; break; }
+          }
+          var isToday = dateStr === todayStr;
+          var style = 'height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:10px;';
+          if (isToday) {
+            style += 'background:#667eea;color:white;font-weight:700;';
+          } else if (hasEvents) {
+            style += 'background:#e8f4fd;color:#667eea;font-weight:700;';
+          } else {
+            style += 'color:#333;';
+          }
+          miniCalendar += '<div style="' + style + '">' + d + '</div>';
+        }
+        miniCalendar += '</div>';
+        monthCard.innerHTML = miniCalendar;
         monthCard.onclick = (function(monthIdx) { return function() { currentDate = new Date(year, monthIdx, 1); switchCalendarView('month'); }; })(m);
         grid.appendChild(monthCard);
       }
@@ -1349,6 +1383,17 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // Reset to month view on every load
+      calendarView = 'month';
+      // Reset view switcher buttons
+      var viewButtons = document.querySelectorAll('.view-btn');
+      for (var i = 0; i < viewButtons.length; i++) {
+        if (viewButtons[i].dataset.view === 'month') {
+          viewButtons[i].classList.add('active');
+        } else {
+          viewButtons[i].classList.remove('active');
+        }
+      }
       renderCalendar();
       if (isGasReady()) loadFromSheet();
 
@@ -1356,8 +1401,6 @@
       if (savedView === 'ideas') {
         switchView('ideas');
       }
-
-
     });
 
     document.getElementById('modal').addEventListener('click', (e) => {
