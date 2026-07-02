@@ -407,10 +407,10 @@
         <span class="icon">📅</span>
         <span class="label">Календарь</span>
       </button>
-      <button class="nav-tab" onclick="console.log('Sync clicked'); loadFromSheet();" id="syncBtn" title="Обновить">
+      <div class="nav-tab" id="syncBtn" title="Обновить" style="cursor:pointer;position:relative;z-index:10;" onclick="console.log('Sync clicked'); loadFromSheet();">
         <span class="icon" id="syncIcon">🔄</span>
         <span class="label">Обновить</span>
-      </button>
+      </div>
       <button class="nav-tab" onclick="switchView('ideas')" id="tab-ideas">
         <span class="icon">💡</span>
         <span class="label">Идеи</span>
@@ -1231,6 +1231,7 @@
       if (syncBtn) {
         syncBtn.addEventListener('click', function(e) {
           e.stopPropagation();
+          e.preventDefault();
           console.log('Sync button clicked');
           loadFromSheet();
         });
