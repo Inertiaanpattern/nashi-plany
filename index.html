@@ -571,7 +571,12 @@
     }
 
     function addCategoryToUI(key, name, color) {
-      // Add to categories object (allow overwriting if exists)
+      // Check if a category with this name already exists (prevent duplicates like "Другое")
+      for (var k in categories) {
+        if (categories[k].name === name) return;
+      }
+
+      // Add to categories object
       categories[key] = { 
         name: name, 
         class: 'cat-custom', 
