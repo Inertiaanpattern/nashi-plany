@@ -201,6 +201,8 @@
       background: none; border: none; padding: 5px 20px; cursor: pointer;
       color: #aaa; transition: color 0.2s; touch-action: manipulation;
     }
+    .nav-tab .icon { pointer-events: none; }
+    .nav-tab .label { pointer-events: none; }
     .nav-tab.active { color: #667eea; }
     .nav-tab .icon { font-size: 18px; line-height: 1; }
     .nav-tab .label { font-size: 9px; font-weight: 600; }
@@ -405,7 +407,7 @@
         <span class="icon">📅</span>
         <span class="label">Календарь</span>
       </button>
-      <button class="nav-tab" onclick="loadFromSheet()" id="syncBtn" title="Обновить">
+      <button class="nav-tab" onclick="console.log('Sync clicked'); loadFromSheet();" id="syncBtn" title="Обновить">
         <span class="icon" id="syncIcon">🔄</span>
         <span class="label">Обновить</span>
       </button>
@@ -1222,6 +1224,16 @@
       const savedView = localStorage.getItem('lastView');
       if (savedView === 'ideas') {
         switchView('ideas');
+      }
+
+      // Ensure sync button is clickable
+      const syncBtn = document.getElementById('syncBtn');
+      if (syncBtn) {
+        syncBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          console.log('Sync button clicked');
+          loadFromSheet();
+        });
       }
     });
 
