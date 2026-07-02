@@ -44,6 +44,8 @@
     }
     .header h1 { font-size: 16px; font-weight: 700; color: #333; }
     .header-actions { display: flex; gap: 6px; align-items: center; }
+    .btn-add { display: none; }
+    .view-ideas-active .btn-add { display: block; }
 
     .btn-add {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -98,6 +100,35 @@
       border-right: 1px solid #f0f0f0; padding: 3px 2px; min-height: 0;
       display: flex; flex-direction: column; overflow: hidden; cursor: pointer;
       transition: background 0.15s; position: relative;
+    }
+    .day-cell:hover {
+      background: rgba(102, 126, 234, 0.08);
+    }
+    .day-cell .add-hover {
+      display: none;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 28px;
+      font-weight: 300;
+      color: rgba(102, 126, 234, 0.35);
+      pointer-events: none;
+      z-index: 10;
+      line-height: 1;
+    }
+    .day-cell:hover .add-hover {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .day-cell:hover .day-events {
+      opacity: 0.3;
+    }
+    .day-cell:hover .day-number {
+      opacity: 0.3;
+    }
+    .day-cell.other-month:hover .add-hover {
+      color: rgba(150, 150, 150, 0.25);
     }
     .day-cell:last-child { border-right: none; }
     .day-cell:active { background: #f5f5f5; }
@@ -337,24 +368,16 @@
 <body>
   <div id="app">
     <div class="header">
-      <h1>📅 Hamster&Fish, v.3</h1>
+      <h1>📅 Hamster&Fish, v.2259</h1>
       <div class="header-actions">
-        <button class="btn-sync" onclick="loadFromSheet()" id="syncBtn" title="Синхронизировать">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-            <path d="M16 21h5v-5"/>
-          </svg>
-        </button>
         <button class="btn-add" onclick="openModal()">+ Добавить</button>
       </div>
     </div>
 
     <div class="month-nav" id="monthNav">
-      <button onclick="prevMonth()">◀</button>
+      <button onclick="prevMonth()">‹</button>
       <div class="month-title" id="monthTitle">Июнь 2026</div>
-      <button onclick="nextMonth()">▶</button>
+      <button onclick="nextMonth()">›</button>
     </div>
 
     <div id="view-calendar">
@@ -386,6 +409,10 @@
       <button class="nav-tab active" onclick="switchView('calendar')" id="tab-calendar">
         <span class="icon">📅</span>
         <span class="label">Календарь</span>
+      </button>
+      <button class="nav-tab" onclick="loadFromSheet()" id="syncBtn">
+        <span class="icon" id="syncIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg></span>
+        <span class="label">Обновить</span>
       </button>
       <button class="nav-tab" onclick="switchView('ideas')" id="tab-ideas">
         <span class="icon">💡</span>
@@ -829,7 +856,7 @@
             } else {
               displayDay = currentDay - daysInMonth;
             }
-            cell.innerHTML = `<div class="day-number">${displayDay}</div>`;
+            cell.innerHTML = `<div class="day-number">${displayDay}</div><div class="add-hover">+</div>`;
           } else {
             const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
             if (dateStr === todayStr) cell.classList.add('today');
@@ -853,6 +880,7 @@
             cell.innerHTML = `
               <div class="day-number">${currentDay}</div>
               <div class="day-events">${eventsHtml}</div>
+              <div class="add-hover">+</div>
             `;
             cell.onclick = () => openDayPopup(dateStr, dayNum, monthNameCap);
           }
@@ -881,6 +909,7 @@
       const tabCalendar = document.getElementById('tab-calendar');
       const tabIdeas = document.getElementById('tab-ideas');
       const monthNav = document.getElementById('monthNav');
+      const app = document.getElementById('app');
 
       localStorage.setItem('lastView', view);
 
@@ -890,12 +919,14 @@
         tabCalendar.classList.add('active');
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
+        app.classList.remove('view-ideas-active');
       } else {
         calendarView.style.display = 'none';
         ideasView.classList.add('active');
         tabCalendar.classList.remove('active');
         tabIdeas.classList.add('active');
         monthNav.classList.add('hidden');
+        app.classList.add('view-ideas-active');
         renderIdeas();
       }
     }
