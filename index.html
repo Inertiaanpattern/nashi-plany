@@ -194,6 +194,17 @@
       background: #ffffff; border-top: 1px solid #e8e8e8; padding: 4px 0;
       padding-bottom: max(4px, env(safe-area-inset-bottom)); z-index: 100;
     }
+    .view-switcher {
+      flex-shrink: 0; display: flex; justify-content: center; align-items: center;
+      gap: 8px; padding: 6px 12px; background: #ffffff;
+      border-top: 1px solid #e8e8e8; z-index: 100;
+    }
+    .view-btn {
+      background: none; border: 2px solid #e0e0e0; color: #666;
+      padding: 4px 14px; border-radius: 14px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; touch-action: manipulation;
+    }
+    .view-btn.active { border-color: #667eea; background: #667eea; color: white; }
     #syncBtn { cursor: pointer; -webkit-tap-highlight-color: transparent; }
     #syncBtn:active { opacity: 0.6; }
     .nav-tab {
@@ -332,6 +343,8 @@
       .nav-tab .icon { font-size: 20px; }
       .nav-tab .label { font-size: 10px; }
       .nav-tab { padding: 6px 24px; }
+      .view-switcher { padding: 8px 16px; }
+      .view-btn { font-size: 13px; padding: 5px 18px; }
       .bottom-nav { padding: 6px 0; }
       .modal-title { font-size: 19px; }
       .modal-close { width: 36px; height: 36px; font-size: 24px; }
@@ -402,15 +415,19 @@
       <div class="ideas-list" id="ideasList"></div>
     </div>
 
+    <div class="view-switcher" id="viewSwitcher">
+      <button class="view-btn active" onclick="alert('Неделя - скоро будет')" data-view="week">Неделя</button>
+      <button class="view-btn" onclick="alert('Месяц - уже работает')" data-view="month">Месяц</button>
+      <button class="view-btn" onclick="alert('Год - скоро будет')" data-view="year">Год</button>
+    </div>
     <div class="bottom-nav">
       <button class="nav-tab active" onclick="switchView('calendar')" id="tab-calendar">
         <span class="icon">📅</span>
         <span class="label">Календарь</span>
       </button>
-      <div class="nav-tab" id="syncBtn" title="Обновить" style="cursor:pointer;position:relative;z-index:10;" onclick="console.log('Sync clicked'); loadFromSheet();">
+      <button class="btn-sync nav-tab" onclick="loadFromSheet()" id="syncBtn" title="Обновить">
         <span class="icon" id="syncIcon">🔄</span>
-        <span class="label">Обновить</span>
-      </div>
+      </button>
       <button class="nav-tab" onclick="switchView('ideas')" id="tab-ideas">
         <span class="icon">💡</span>
         <span class="label">Идеи</span>
@@ -1226,16 +1243,7 @@
         switchView('ideas');
       }
 
-      // Ensure sync button is clickable
-      const syncBtn = document.getElementById('syncBtn');
-      if (syncBtn) {
-        syncBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-          console.log('Sync button clicked');
-          loadFromSheet();
-        });
-      }
+
     });
 
     document.getElementById('modal').addEventListener('click', (e) => {
