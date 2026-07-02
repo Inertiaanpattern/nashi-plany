@@ -1,13 +1,18 @@
 // View Switcher for Calendar (Week/Month/Year)
-// This file extends the main calendar functionality
 
 window.calendarView = 'month';
 
 window.switchCalendarView = function(view) {
   window.calendarView = view;
-  document.querySelectorAll('.view-btn').forEach(function(btn) {
-    btn.classList.toggle('active', btn.dataset.view === view);
-  });
+  var buttons = document.querySelectorAll('.view-btn');
+  for (var i = 0; i < buttons.length; i++) {
+    var btn = buttons[i];
+    if (btn.dataset.view === view) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
   if (view === 'month') {
     renderCalendar();
   } else if (view === 'week') {
@@ -19,6 +24,7 @@ window.switchCalendarView = function(view) {
 
 window.renderWeekView = function() {
   var calendarBody = document.getElementById('calendarBody');
+  if (!calendarBody) return;
   calendarBody.innerHTML = '';
   var year = currentDate.getFullYear();
   var month = currentDate.getMonth();
@@ -29,22 +35,27 @@ window.renderWeekView = function() {
   weekRow.style.flex = '1';
   for (var i = 0; i < 7; i++) {
     var cellDate = new Date(startOfWeek.getTime() + i * 86400000);
-    var dateStr = cellDate.getFullYear() + '-' + String(cellDate.getMonth()+1).padStart(2,'0') + '-' + String(cellDate.getDate()).padStart(2,'0');
+    var dateStr = cellDate.getFullYear() + '-' + pad(cellDate.getMonth()+1) + '-' + pad(cellDate.getDate());
     var cell = document.createElement('div');
     cell.className = 'day-cell';
     if (i >= 5) cell.classList.add('weekend');
-    var dayEvents = events.filter(function(e) { return e.date === dateStr; }).sort(function(a,b) { return (a.time||'').localeCompare(b.time||''); });
+    var dayEvents = [];
+    for (var j = 0; j < events.length; j++) {
+      if (events[j].date === dateStr) dayEvents.push(events[j]);
+    }
+    dayEvents.sort(function(a,b) { return (a.time||'').localeCompare(b.time||''); });
     var eventsHtml = '';
-    dayEvents.forEach(function(ev) {
+    for (var k = 0; k < dayEvents.length; k++) {
+      var ev = dayEvents[k];
       var cat = categories[ev.category] || categories.other;
-      var timeRange = ev.time ? (ev.timeEnd ? ev.time + '–' + ev.timeEnd : ev.time) : '';
+      var timeRange = ev.time ? (ev.timeEnd ? ev.time + '-' + ev.timeEnd : ev.time) : '';
       var timePrefix = timeRange ? timeRange + ' ' : '';
-      eventsHtml += '<div class="event-chip ' + cat.class + '" title="' + ev.title + (ev.place ? ' — ' + ev.place : '') + '" onclick="event.stopPropagation(); openEditModalById('' + ev.id + '')">' + timePrefix + ev.title + '</div>';
-    });
+      eventsHtml += '<div class="event-chip ' + cat.class + '" title="' + ev.title + (ev.place ? ' - ' + ev.place : '') + '" onclick="event.stopPropagation(); openEditModalById('' + ev.id + '')">' + timePrefix + ev.title + '</div>';
+    }
     cell.innerHTML = '<div class="day-number">' + cellDate.getDate() + '</div><div class="day-events">' + eventsHtml + '</div><div class="add-hover">+</div>';
     var dayNum = cellDate.getDate();
     var monthNameCap = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][cellDate.getMonth()];
-    cell.onclick = function() { openDayPopup(dateStr, dayNum, monthNameCap); };
+    cell.onclick = (function(ds, dn, mn) { return function() { openDayPopup(ds, dn, mn); }; })(dateStr, dayNum, monthNameCap);
     weekRow.appendChild(cell);
   }
   calendarBody.appendChild(weekRow);
@@ -52,6 +63,7 @@ window.renderWeekView = function() {
 
 window.renderYearView = function() {
   var calendarBody = document.getElementById('calendarBody');
+  if (!calendarBody) return;
   calendarBody.innerHTML = '';
   var year = currentDate.getFullYear();
   var monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
@@ -72,18 +84,23 @@ window.renderYearView = function() {
     monthCard.style.transition = 'background 0.2s';
     monthCard.onmouseenter = function() { this.style.background = '#f5f5f5'; };
     monthCard.onmouseleave = function() { this.style.background = '#fff'; };
-    var monthEvents = events.filter(function(e) { return e.date && e.date.indexOf(year + '-' + String(m+1).padStart(2,'0')) === 0; }).length;
+    var prefix = year + '-' + pad(m+1);
+    var monthEvents = 0;
+    for (var e = 0; e < events.length; e++) {
+      if (events[e].date && events[e].date.indexOf(prefix) === 0) monthEvents++;
+    }
     monthCard.innerHTML = '<div style="font-weight:700;font-size:13px;color:#333;margin-bottom:4px;">' + monthNames[m] + '</div><div style="font-size:11px;color:#888;">' + monthEvents + ' событий</div>';
-    monthCard.onclick = function() { currentDate = new Date(year, m, 1); switchCalendarView('month'); };
+    monthCard.onclick = (function(monthIdx) { return function() { currentDate = new Date(year, monthIdx, 1); switchCalendarView('month'); }; })(m);
     grid.appendChild(monthCard);
   }
   calendarBody.appendChild(grid);
 };
 
-// Override prevMonth/nextMonth to handle different views
-var originalPrevMonth = prevMonth;
-var originalNextMonth = nextMonth;
+function pad(n) {
+  return n < 10 ? '0' + n : '' + n;
+}
 
+// Override prevMonth/nextMonth
 window.prevMonth = function() {
   if (window.calendarView === 'week') {
     currentDate.setDate(currentDate.getDate() - 7);
@@ -109,3 +126,8 @@ window.nextMonth = function() {
     renderCalendar();
   }
 };
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+  window.calendarView = 'month';
+});
