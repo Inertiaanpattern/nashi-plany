@@ -2787,11 +2787,16 @@
       }
     }
 
-    function openDayPopup(dateStr, day, monthName) {
+   function openDayPopup(dateStr, day, monthName) {
       selectedDate = dateStr;
       const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+      
+      var monthNamesNom = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+      var monthNamesGen = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+      var monthIndex = monthNamesNom.indexOf(monthName);
+      var monthGen = monthIndex >= 0 ? monthNamesGen[monthIndex] : monthName.toLowerCase();
 
-      document.getElementById('dayPopupTitle').textContent = `${day} ${monthName.toLowerCase()}`;
+      document.getElementById('dayPopupTitle').textContent = day + ' ' + monthGen;
 
       const container = document.getElementById('dayPopupEvents');
       if (dayEvents.length === 0) {
