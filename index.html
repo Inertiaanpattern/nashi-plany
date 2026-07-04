@@ -131,11 +131,8 @@
     }
     .event-chip {
       font-size: 8px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis; cursor: pointer; font-weight: 400; line-height: 1.3; display: flex; flex-direction: column;
+      text-overflow: ellipsis; cursor: pointer; font-weight: 600; line-height: 1.3;
     }
-    .event-chip .ev-time { font-weight: 700; font-size: 7px; }
-    .event-chip .ev-title { font-weight: 400; }
-    .event-chip.past { opacity: 0.5; text-decoration: line-through; }
     .event-chip.more { background: #f0f0f0; color: #888; text-align: center; font-size: 7px; font-weight: 700; }
 
     .cat-excursions { background: #e8f5e9; color: #2e7d32; }
@@ -171,10 +168,47 @@
     .idea-card {
       border-radius: 10px; padding: 12px; margin-bottom: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      position: relative;
     }
     .idea-card:active { transform: scale(0.98); box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
-    .idea-card.past { opacity: 0.5; text-decoration: line-through; }
+    .idea-card.past {
+      opacity: 0.5;
+      text-decoration: line-through;
+      background: #f5f5f5;
+      order: 999;
+    }
+    .idea-card.past .idea-title,
+    .idea-card.past .idea-category,
+    .idea-card.past .idea-date,
+    .idea-card.past .idea-place,
+    .idea-card.past .idea-time {
+      text-decoration: line-through;
+      color: #999;
+    }
+    .idea-card .archive-actions {
+      display: none;
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      gap: 4px;
+    }
+    .idea-card.past .archive-actions {
+      display: flex;
+    }
+    .archive-btn {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      opacity: 0.7;
+    }
+    .archive-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+    .archive-btn.delete { color: #e74c3c; }
+    .archive-btn.edit { color: #667eea; }
     .idea-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 4px; }
     .idea-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
     .idea-category {
@@ -198,6 +232,28 @@
       background: #ffffff; border-top: 1px solid #e8e8e8; padding: 4px 0;
       padding-bottom: max(4px, env(safe-area-inset-bottom)); z-index: 100;
     }
+    .refresh-btn {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: #6B7280;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.7);
+      transition: background .25s ease, color .25s ease, transform .25s ease, box-shadow .25s ease;
+      flex-shrink: 0; padding: 0; margin: 0;
+    }
+    .refresh-btn:hover {
+      background: rgba(255,255,255,.92);
+      color: #3B82F6;
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .refresh-btn:active { transform: scale(.94); }
+    .refresh-btn.spin svg { animation: refreshSpin .6s ease; }
+    @keyframes refreshSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .view-switcher {
       flex-shrink: 0; display: flex; justify-content: center; align-items: center;
       gap: 8px; padding: 6px 12px; background: #ffffff;
@@ -339,9 +395,7 @@
       .weekday-label { font-size: 11px; }
       .day-number { font-size: 13px; font-weight: 400; width: 24px; height: 24px; }
       .day-cell { padding: 4px 3px; }
-      .event-chip { font-size: 10px; padding: 2px 4px; display: flex; flex-direction: column; }
-      .event-chip .ev-time { font-weight: 700; font-size: 9px; }
-      .event-chip.past { opacity: 0.5; text-decoration: line-through; }
+      .event-chip { font-size: 10px; padding: 2px 4px; }
       .event-chip.more { font-size: 9px; }
       .nav-tab .icon { font-size: 20px; }
       .nav-tab .label { font-size: 10px; }
@@ -427,8 +481,11 @@
       <button class="nav-tab active" onclick="switchView('calendar')" id="tab-calendar">
         <span class="icon" style="font-size:24px;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/><line x1="3" y1="9" x2="21" y2="9"/><circle cx="8" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="12" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="16" cy="13" r="0.7" fill="currentColor" stroke="none"/><circle cx="8" cy="17" r="0.7" fill="currentColor" stroke="none"/><path d="M12 18.3C11.2 17.6 10 16.8 10 15.7C10 14.9 10.6 14.3 11.4 14.3C11.9 14.3 12.3 14.6 12.5 15C12.7 14.6 13.1 14.3 13.6 14.3C14.4 14.3 15 14.9 15 15.7C15 16.8 13.8 17.6 13 18.3Z" fill="#EF4444" stroke="none"/><circle cx="16" cy="17" r="0.7" fill="currentColor" stroke="none"/></svg></span>
       </button>
-      <button class="refresh-btn btn-sync nav-tab" onclick="loadFromSheet()" id="syncBtn" title="Обновить">
-        <span class="icon" id="syncIcon" style="font-size:24px;">🔄</span>
+      <button class="refresh-btn" onclick="loadFromSheet()" id="syncBtn" title="Обновить планы">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 2v6h-6"/>
+          <path d="M20.49 9A9 9 0 1 0 21 12"/>
+        </svg>
       </button>
       <button class="nav-tab" onclick="switchView('ideas')" id="tab-ideas">
         <span class="icon" style="font-size:24px;">📌</span>
@@ -517,7 +574,6 @@
   <!-- === JS === -->
   <!-- ============================================ -->
   <script>
-    function pad(n) { return n < 10 ? "0" + n : "" + n; }
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJmh7pS1As7WqGtj0nNxj1TDIh_6uWbsCFjCpph67FtF_di28htOKa4xdsq3EyZ5mHSw/exec';
 
     // Базовые категории
@@ -575,12 +631,6 @@
     }
 
     function addCategoryToUI(key, name, color) {
-      // Check if a category with this name already exists (prevent duplicates like "Другое")
-      for (var k in categories) {
-        if (categories[k].name === name) return;
-      }
-
-      // Add to categories object
       categories[key] = { 
         name: name, 
         class: 'cat-custom', 
@@ -588,29 +638,21 @@
         bg: color || '#f5f5f5' 
       };
 
-      // Check if already in DOM before adding
-      var existingOption = document.querySelector('.cat-option[data-cat="' + key + '"]');
-      if (!existingOption) {
-        // Добавить в форму
-        const div = document.createElement('div');
-        div.className = 'cat-option cat-custom';
-        div.dataset.cat = key;
-        div.onclick = function() { selectCategory(this); };
-        div.textContent = '✨ ' + name;
-        document.getElementById('categoryOptions').appendChild(div);
-      }
+      // Добавить в форму
+      const div = document.createElement('div');
+      div.className = 'cat-option cat-custom';
+      div.dataset.cat = key;
+      div.onclick = function() { selectCategory(this); };
+      div.textContent = '✨ ' + name;
+      document.getElementById('categoryOptions').appendChild(div);
 
-      // Check if already in filters before adding
-      var existingFilter = document.querySelector('.filter-chip[data-filter="' + key + '"]');
-      if (!existingFilter) {
-        // Добавить в фильтры
-        const filterDiv = document.createElement('div');
-        filterDiv.className = 'filter-chip';
-        filterDiv.onclick = function() { filterIdeas(key); };
-        filterDiv.dataset.filter = key;
-        filterDiv.textContent = name;
-        document.getElementById('ideasFilter').appendChild(filterDiv);
-      }
+      // Добавить в фильтры
+      const filterDiv = document.createElement('div');
+      filterDiv.className = 'filter-chip';
+      filterDiv.onclick = function() { filterIdeas(key); };
+      filterDiv.dataset.filter = key;
+      filterDiv.textContent = name;
+      document.getElementById('ideasFilter').appendChild(filterDiv);
     }
 
     function saveCategoryToServer(key, name) {
@@ -660,8 +702,8 @@
           var offset = d.getTimezoneOffset() * 60000;
           var localDate = new Date(d.getTime() + offset);
           dateStr = localDate.getFullYear() + '-' +
-                    pad(localDate.getMonth()+1) + '-' +
-                    pad(localDate.getDate());
+                    String(localDate.getMonth()+1).padStart(2,'0') + '-' +
+                    String(localDate.getDate()).padStart(2,'0');
         }
 
         var timeStr = '';
@@ -852,7 +894,7 @@
       const month = currentDate.getMonth();
       const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь',
                           'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-      document.getElementById('monthTitle').textContent = monthNames[month] + ' ' + year;
+      document.getElementById('monthTitle').textContent = `${monthNames[month]} ${year}`;
 
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -864,7 +906,7 @@
 
       let currentDay = 1 - startDayOfWeek;
       const today = new Date();
-      const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       const totalCells = startDayOfWeek + daysInMonth;
       const numWeeks = Math.ceil(totalCells / 7);
 
@@ -888,7 +930,7 @@
             }
             cell.innerHTML = `<div class="day-number">${displayDay}</div><div class="add-hover">+</div>`;
           } else {
-            const dateStr = `${year}-${pad(month+1)}-${pad(currentDay)}`;
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(currentDay).padStart(2,'0')}`;
             if (dateStr === todayStr) cell.classList.add('today');
 
             const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
@@ -899,8 +941,7 @@
               const cat = categories[ev.category] || categories.other;
               const timeRange = ev.time ? (ev.timeEnd ? `${ev.time}–${ev.timeEnd}` : ev.time) : '';
               const timePrefix = timeRange ? `${timeRange} ` : '';
-              var pastClass = isEventPast(ev) ? ' past' : '';
-            eventsHtml += `<div class="event-chip ${cat.class}${pastClass}" title="${ev.title}${ev.place ? ' — ' + ev.place : ''}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')"><span class="ev-time">${timePrefix}</span><span class="ev-title">${ev.title}</span></div>`;
+              eventsHtml += `<div class="event-chip ${cat.class}" title="${ev.title}${ev.place ? ' — ' + ev.place : ''}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">${timePrefix}${ev.title}</div>`;
             });
             if (dayEvents.length > maxEvents) {
               eventsHtml += `<div class="event-chip more">+${dayEvents.length - maxEvents} ещё</div>`;
@@ -957,7 +998,6 @@
       const tabIdeas = document.getElementById('tab-ideas');
       const monthNav = document.getElementById('monthNav');
       const app = document.getElementById('app');
-      const viewSwitcher = document.getElementById('viewSwitcher');
 
       localStorage.setItem('lastView', view);
 
@@ -968,7 +1008,6 @@
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
         app.classList.remove('view-ideas-active');
-        if (viewSwitcher) viewSwitcher.style.display = 'flex';
       } else {
         calendarView.style.display = 'none';
         ideasView.classList.add('active');
@@ -976,7 +1015,6 @@
         tabIdeas.classList.add('active');
         monthNav.classList.add('hidden');
         app.classList.add('view-ideas-active');
-        if (viewSwitcher) viewSwitcher.style.display = 'none';
         renderIdeas();
       }
     }
@@ -994,10 +1032,13 @@
         }
       }
       var calendarViewEl = document.getElementById('view-calendar');
+      var weekdaysHeader = document.getElementById('weekdaysHeader');
       if (view === 'year') {
         calendarViewEl.classList.add('year-view');
+        if (weekdaysHeader) weekdaysHeader.style.display = 'none';
       } else {
         calendarViewEl.classList.remove('year-view');
+        if (weekdaysHeader) weekdaysHeader.style.display = 'grid';
       }
       if (view === 'month') {
         renderCalendar();
@@ -1028,13 +1069,12 @@
         weekRange = startDay + ' ' + startMonth + ' – ' + endDay + ' ' + endMonth + ' ' + endOfWeek.getFullYear();
       }
       document.getElementById('monthTitle').textContent = weekRange;
-
       var weekRow = document.createElement('div');
       weekRow.className = 'week-row';
       weekRow.style.flex = '1';
       for (var i = 0; i < 7; i++) {
         var cellDate = new Date(startOfWeek.getTime() + i * 86400000);
-        var dateStr = cellDate.getFullYear() + '-' + pad(cellDate.getMonth()+1) + '-' + pad(cellDate.getDate());
+        var dateStr = cellDate.getFullYear() + '-' + String(cellDate.getMonth()+1).padStart(2,'0') + '-' + String(cellDate.getDate()).padStart(2,'0');
         var cell = document.createElement('div');
         cell.className = 'day-cell';
         if (i >= 5) cell.classList.add('weekend');
@@ -1045,8 +1085,7 @@
           var cat = categories[ev.category] || categories.other;
           var timeRange = ev.time ? (ev.timeEnd ? ev.time + '-' + ev.timeEnd : ev.time) : '';
           var timePrefix = timeRange ? timeRange + ' ' : '';
-          var pastClass2 = isEventPast(ev) ? " past" : "";
-          eventsHtml += "<div class=\"event-chip " + cat.class + pastClass2 + "\" title=\"" + ev.title + (ev.place ? " - " + ev.place : "") + "\" onclick=\"event.stopPropagation(); openEditModalById('" + ev.id + "')\"><span class=\"ev-time\">" + timePrefix + "</span><span class=\"ev-title\">" + ev.title + "</span></div>";
+          eventsHtml += "<div class=\"event-chip " + cat.class + "\" title=\"" + ev.title + (ev.place ? " - " + ev.place : "") + "\" onclick=\"event.stopPropagation(); openEditModalById('" + ev.id + "')\">" + timePrefix + ev.title + "</div>";
         }
         cell.innerHTML = "<div class=\"day-number\">" + cellDate.getDate() + "</div><div class=\"day-events\">" + eventsHtml + "</div><div class=\"add-hover\">+</div>";
         var dayNum = cellDate.getDate();
@@ -1085,7 +1124,7 @@
         var daysInMonth = lastDay.getDate();
         var startDayOfWeek = (firstDay.getDay() + 6) % 7;
         var today = new Date();
-        var todayStr = today.getFullYear() + '-' + pad(today.getMonth()+1) + '-' + pad(today.getDate());
+        var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
         var miniCalendar = '<div style="font-weight:700;font-size:12px;color:#333;margin-bottom:8px;text-align:center;">' + monthNames[m] + '</div>';
         miniCalendar += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center;font-size:7px;color:#bbb;margin-bottom:2px;">';
         var wdShort = ['П','В','С','Ч','П','С','В'];
@@ -1095,10 +1134,10 @@
         miniCalendar += '</div>';
         miniCalendar += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;">';
         for (var empty = 0; empty < startDayOfWeek; empty++) {
-          miniCalendar += '<div style="height:20px;"></div>';
+          miniCalendar += '<div style="height:18px;"></div>';
         }
         for (var d = 1; d <= daysInMonth; d++) {
-          var dateStr = year + '-' + pad(m+1) + '-' + pad(d);
+          var dateStr = year + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
           var hasEvents = false;
           for (var e = 0; e < events.length; e++) {
             if (events[e].date === dateStr) { hasEvents = true; break; }
@@ -1124,11 +1163,11 @@
 
     function renderIdeas() {
       const list = document.getElementById('ideasList');
-      // Show ALL events in ideas tab, not just those without dates
-      const ideas = events;
+      // Show ALL events, but sort: future first, then past (archived)
+      const sortedEvents = sortEventsByDate(events);
 
       if (currentFilter !== 'all') {
-        const filtered = ideas.filter(e => e.category === currentFilter);
+        const filtered = sortedEvents.filter(e => e.category === currentFilter);
         if (filtered.length === 0) {
           list.innerHTML = `
             <div class="empty-state">
@@ -1142,7 +1181,7 @@
         return;
       }
 
-      if (ideas.length === 0) {
+      if (sortedEvents.length === 0) {
         list.innerHTML = `
           <div class="empty-state">
             <div class="empty-state-icon">💡</div>
@@ -1152,7 +1191,7 @@
         return;
       }
 
-      renderIdeasList(ideas, list);
+      renderIdeasList(sortedEvents, list);
     }
 
     function getCategoryName(key) {
@@ -1163,9 +1202,16 @@
       container.innerHTML = ideas.map(idea => {
         const cat = categories[idea.category] || categories.other;
         const timeRange = idea.time ? (idea.timeEnd ? `${idea.time}–${idea.timeEnd}` : idea.time) : '';
-        var ideaPastClass = idea.date && isEventPast(idea) ? ' past' : '';
+        const isPast = idea.date && isEventPast(idea);
+        const pastClass = isPast ? 'past' : '';
+        const archiveActions = isPast ? `
+          <div class="archive-actions">
+            <button class="archive-btn edit" onclick="event.stopPropagation(); openEditModalById('${idea.id}')" title="Редактировать">✏️</button>
+            <button class="archive-btn delete" onclick="event.stopPropagation(); deleteEventById('${idea.id}')" title="Удалить">🗑️</button>
+          </div>
+        ` : '';
         return `
-          <div class="idea-card ${cat.class}${ideaPastClass}" onclick="openEditModalById('${idea.id}')">
+          <div class="idea-card ${cat.class} ${pastClass}" onclick="openEditModalById('${idea.id}')">
             <div class="idea-title">${escapeHtml(idea.title)}</div>
             <div class="idea-meta">
               <span class="idea-category ${cat.class}">${getCategoryName(idea.category)}</span>
@@ -1174,6 +1220,7 @@
             ${idea.place ? `<div class="idea-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(idea.place)}" target="_blank">📍 ${escapeHtml(idea.place)}</a></div>` : ''}
             ${timeRange ? `<div class="idea-time">🕐 ${timeRange}</div>` : ''}
             ${idea.author ? `<div class="idea-author">👤 ${escapeHtml(idea.author)}</div>` : ''}
+            ${archiveActions}
           </div>
         `;
       }).join('');
@@ -1333,9 +1380,8 @@
 
       closeModal();
       renderCalendar();
-      renderIdeas(); // Always update ideas list
       if (document.getElementById('view-ideas').classList.contains('active')) {
-        // Already rendered above
+        renderIdeas();
       }
     }
 
@@ -1350,9 +1396,8 @@
       }
       closeModal();
       renderCalendar();
-      renderIdeas(); // Always update ideas list
       if (document.getElementById('view-ideas').classList.contains('active')) {
-        // Already rendered above
+        renderIdeas();
       }
     }
 
@@ -1367,10 +1412,15 @@
       deleteFromServer(editingId);
       closeModal();
       renderCalendar();
-      renderIdeas(); // Always update ideas list
-      if (document.getElementById('view-ideas').classList.contains('active')) {
-        // Already rendered above
-      }
+      renderIdeas();
+    }
+
+    function deleteEventById(id) {
+      if (!confirm('Удалить событие полностью? Это действие нельзя отменить.')) return;
+      events = events.filter(e => String(e.id) !== String(id));
+      deleteFromServer(id);
+      renderCalendar();
+      renderIdeas();
     }
 
     function openDayPopup(dateStr, day, monthName) {
@@ -1381,6 +1431,7 @@
       var monthNamesGen = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
       var monthIndex = monthNamesNom.indexOf(monthName);
       var monthGen = monthIndex >= 0 ? monthNamesGen[monthIndex] : monthName.toLowerCase();
+
       document.getElementById('dayPopupTitle').textContent = day + ' ' + monthGen;
 
       const container = document.getElementById('dayPopupEvents');
@@ -1422,6 +1473,16 @@
       return eventDate < today;
     }
 
+    function sortEventsByDate(eventsList) {
+      return eventsList.sort(function(a, b) {
+        var aPast = isEventPast(a);
+        var bPast = isEventPast(b);
+        if (aPast && !bPast) return 1;
+        if (!aPast && bPast) return -1;
+        return 0;
+      });
+    }
+
     function escapeHtml(text) {
       if (!text) return '';
       const div = document.createElement('div');
@@ -1430,9 +1491,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Reset to month view on every load
       calendarView = 'month';
-      // Reset view switcher buttons
       var viewButtons = document.querySelectorAll('.view-btn');
       for (var i = 0; i < viewButtons.length; i++) {
         if (viewButtons[i].dataset.view === 'month') {
