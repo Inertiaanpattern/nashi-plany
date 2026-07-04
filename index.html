@@ -198,35 +198,7 @@
     .idea-card.past .archive-actions {
       display: flex;
     }
-    .idea-card {
-      touch-action: pan-y;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    .idea-card.swiped-left {
-      transform: translateX(-60px);
-    }
-    .idea-card.swiped-left .swipe-actions {
-      display: flex;
-    }
-    .swipe-actions {
-      display: none;
-      position: absolute;
-      right: -60px;
-      top: 0;
-      bottom: 0;
-      width: 60px;
-      align-items: center;
-      justify-content: center;
-      background: #e74c3c;
-      border-radius: 0 10px 10px 0;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    .swipe-actions:active {
-      background: #c0392b;
-    }
+    
     .archive-btn {
       background: none;
       border: none;
@@ -290,6 +262,7 @@
       border-top: 1px solid #e8e8e8; z-index: 100;
     }
     .year-view .weekdays-header { display: none; }
+    .view-switcher.hidden { display: none; }
     .view-btn {
       background: none; border: 2px solid #e0e0e0; color: #666;
       padding: 4px 14px; border-radius: 14px; font-size: 12px; font-weight: 600;
@@ -460,6 +433,7 @@
     }
   </style>
   <!-- === КОНЕЦ CSS === -->
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -1030,6 +1004,7 @@
       const tabIdeas = document.getElementById('tab-ideas');
       const monthNav = document.getElementById('monthNav');
       const app = document.getElementById('app');
+      const viewSwitcher = document.getElementById('viewSwitcher');
 
       localStorage.setItem('lastView', view);
 
@@ -1040,6 +1015,7 @@
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
         app.classList.remove('view-ideas-active');
+        viewSwitcher.classList.remove('hidden');
       } else {
         calendarView.style.display = 'none';
         ideasView.classList.add('active');
@@ -1047,6 +1023,7 @@
         tabIdeas.classList.add('active');
         monthNav.classList.add('hidden');
         app.classList.add('view-ideas-active');
+        viewSwitcher.classList.add('hidden');
         renderIdeas();
       }
     }
@@ -1532,41 +1509,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Swipe handling for idea cards
-      var ideasList = document.getElementById('ideasList');
-      if (ideasList) {
-        ideasList.addEventListener('touchstart', function(e) {
-          var card = e.target.closest('.idea-card');
-          if (!card) return;
-          card.dataset.startX = e.touches[0].clientX;
-          card.dataset.startY = e.touches[0].clientY;
-        }, {passive: true});
-
-        ideasList.addEventListener('touchmove', function(e) {
-          var card = e.target.closest('.idea-card');
-          if (!card || !card.dataset.startX) return;
-          var diffX = e.touches[0].clientX - parseFloat(card.dataset.startX);
-          var diffY = e.touches[0].clientY - parseFloat(card.dataset.startY);
-          if (Math.abs(diffX) > Math.abs(diffY) && diffX < -30) {
-            card.style.transform = 'translateX(' + diffX + 'px)';
-          }
-        }, {passive: true});
-
-        ideasList.addEventListener('touchend', function(e) {
-          var card = e.target.closest('.idea-card');
-          if (!card || !card.dataset.startX) return;
-          var diffX = e.changedTouches[0].clientX - parseFloat(card.dataset.startX);
-          if (diffX < -60) {
-            card.classList.add('swiped-left');
-            card.style.transform = 'translateX(-60px)';
-          } else {
-            card.style.transform = 'translateX(0)';
-            card.classList.remove('swiped-left');
-          }
-          delete card.dataset.startX;
-          delete card.dataset.startY;
-        }, {passive: true});
-      }
+      
 
       calendarView = 'month';
       var viewButtons = document.querySelectorAll('.view-btn');
