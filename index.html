@@ -198,6 +198,35 @@
     .idea-card.past .archive-actions {
       display: flex;
     }
+    .idea-card {
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .idea-card.swiped-left {
+      transform: translateX(-60px);
+    }
+    .idea-card.swiped-left .swipe-actions {
+      display: flex;
+    }
+    .swipe-actions {
+      display: none;
+      position: absolute;
+      right: -60px;
+      top: 0;
+      bottom: 0;
+      width: 60px;
+      align-items: center;
+      justify-content: center;
+      background: #e74c3c;
+      border-radius: 0 10px 10px 0;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .swipe-actions:active {
+      background: #c0392b;
+    }
     .archive-btn {
       background: none;
       border: none;
@@ -1220,16 +1249,19 @@
           </div>
         ` : '';
         return `
-          <div class="idea-card ${cat.class} ${pastClass}" onclick="openEditModalById('${idea.id}')">
-            <div class="idea-title">${escapeHtml(idea.title)}</div>
-            <div class="idea-meta">
-              <span class="idea-category ${cat.class}">${getCategoryName(idea.category)}</span>
-              ${idea.date ? `<span class="idea-date">📅 ${formatDate(idea.date)}</span>` : '<span class="idea-date">📌 Без даты</span>'}
+          <div class="idea-card-wrapper" style="position:relative;overflow:hidden;margin-bottom:8px;">
+            <div class="idea-card ${cat.class} ${pastClass}" onclick="openEditModalById('${idea.id}')" data-id="${idea.id}">
+              <div class="idea-title">${escapeHtml(idea.title)}</div>
+              <div class="idea-meta">
+                <span class="idea-category ${cat.class}">${getCategoryName(idea.category)}</span>
+                ${idea.date ? `<span class="idea-date">📅 ${formatDate(idea.date)}</span>` : '<span class="idea-date">📌 Без даты</span>'}
+              </div>
+              ${idea.place ? `<div class="idea-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(idea.place)}" target="_blank">📍 ${escapeHtml(idea.place)}</a></div>` : ''}
+              ${timeRange ? `<div class="idea-time">🕐 ${timeRange}</div>` : ''}
+              ${idea.author ? `<div class="idea-author">👤 ${escapeHtml(idea.author)}</div>` : ''}
+              ${archiveActions}
             </div>
-            ${idea.place ? `<div class="idea-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(idea.place)}" target="_blank">📍 ${escapeHtml(idea.place)}</a></div>` : ''}
-            ${timeRange ? `<div class="idea-time">🕐 ${timeRange}</div>` : ''}
-            ${idea.author ? `<div class="idea-author">👤 ${escapeHtml(idea.author)}</div>` : ''}
-            ${archiveActions}
+            <div class="swipe-actions" onclick="deleteEventById('${idea.id}')">🗑️</div>
           </div>
         `;
       }).join('');
@@ -1500,6 +1532,42 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // Swipe handling for idea cards
+      var ideasList = document.getElementById('ideasList');
+      if (ideasList) {
+        ideasList.addEventListener('touchstart', function(e) {
+          var card = e.target.closest('.idea-card');
+          if (!card) return;
+          card.dataset.startX = e.touches[0].clientX;
+          card.dataset.startY = e.touches[0].clientY;
+        }, {passive: true});
+
+        ideasList.addEventListener('touchmove', function(e) {
+          var card = e.target.closest('.idea-card');
+          if (!card || !card.dataset.startX) return;
+          var diffX = e.touches[0].clientX - parseFloat(card.dataset.startX);
+          var diffY = e.touches[0].clientY - parseFloat(card.dataset.startY);
+          if (Math.abs(diffX) > Math.abs(diffY) && diffX < -30) {
+            card.style.transform = 'translateX(' + diffX + 'px)';
+          }
+        }, {passive: true});
+
+        ideasList.addEventListener('touchend', function(e) {
+          var card = e.target.closest('.idea-card');
+          if (!card || !card.dataset.startX) return;
+          var diffX = e.changedTouches[0].clientX - parseFloat(card.dataset.startX);
+          if (diffX < -60) {
+            card.classList.add('swiped-left');
+            card.style.transform = 'translateX(-60px)';
+          } else {
+            card.style.transform = 'translateX(0)';
+            card.classList.remove('swiped-left');
+          }
+          delete card.dataset.startX;
+          delete card.dataset.startY;
+        }, {passive: true});
+      }
+
       calendarView = 'month';
       var viewButtons = document.querySelectorAll('.view-btn');
       for (var i = 0; i < viewButtons.length; i++) {
