@@ -204,7 +204,7 @@
       -webkit-user-select: none;
     }
     .idea-card.swiped-left {
-      transform: translateX(-60px);
+      transform: translateX(-120px);
     }
     .idea-card.swiped-left .swipe-actions {
       display: flex;
@@ -212,21 +212,35 @@
     .swipe-actions {
       display: none;
       position: absolute;
-      right: -60px;
+      right: -120px;
       top: 0;
       bottom: 0;
-      width: 60px;
+      width: 120px;
       align-items: center;
       justify-content: center;
-      background: #e74c3c;
+      gap: 12px;
+      background: transparent;
       border-radius: 0 10px 10px 0;
       color: white;
       font-size: 20px;
+      cursor: default;
+    }
+    .swipe-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
       cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s;
     }
-    .swipe-actions:active {
-      background: #c0392b;
-    }
+    .swipe-btn:active { transform: scale(0.9); }
+    .swipe-btn.edit { background: #667eea; color: white; box-shadow: 0 2px 6px rgba(102,126,234,0.3); }
+    .swipe-btn.delete { background: #e74c3c; color: white; box-shadow: 0 2px 6px rgba(231,76,60,0.3); }
     .archive-btn {
       background: none;
       border: none;
@@ -289,6 +303,7 @@
       gap: 8px; padding: 6px 12px; background: #ffffff;
       border-top: 1px solid #e8e8e8; z-index: 100;
     }
+    .view-switcher.hidden { display: none; }
     .year-view .weekdays-header { display: none; }
     .view-btn {
       background: none; border: 2px solid #e0e0e0; color: #666;
@@ -457,6 +472,9 @@
       .modal-overlay { align-items: center !important; }
       .modal-sheet { max-width: 420px; border-radius: 16px !important; transform: translateY(20px) !important; }
       .modal-overlay.show .modal-sheet { transform: translateY(0) !important; }
+      .swipe-actions { width: 120px; right: -120px; }
+      .idea-card.swiped-left { transform: translateX(-120px); }
+      .swipe-btn { width: 48px; height: 48px; font-size: 22px; }
     }
   </style>
   <!-- === КОНЕЦ CSS === -->
@@ -1030,6 +1048,7 @@
       const tabIdeas = document.getElementById('tab-ideas');
       const monthNav = document.getElementById('monthNav');
       const app = document.getElementById('app');
+      const viewSwitcher = document.getElementById('viewSwitcher');
 
       localStorage.setItem('lastView', view);
 
@@ -1040,6 +1059,7 @@
         tabIdeas.classList.remove('active');
         monthNav.classList.remove('hidden');
         app.classList.remove('view-ideas-active');
+        viewSwitcher.classList.remove('hidden');
       } else {
         calendarView.style.display = 'none';
         ideasView.classList.add('active');
@@ -1047,6 +1067,7 @@
         tabIdeas.classList.add('active');
         monthNav.classList.add('hidden');
         app.classList.add('view-ideas-active');
+        viewSwitcher.classList.add('hidden');
         renderIdeas();
       }
     }
@@ -1261,7 +1282,10 @@
               ${idea.author ? `<div class="idea-author">👤 ${escapeHtml(idea.author)}</div>` : ''}
               ${archiveActions}
             </div>
-            <div class="swipe-actions" onclick="deleteEventById('${idea.id}')">🗑️</div>
+            <div class="swipe-actions">
+              <button class="swipe-btn edit" onclick="event.stopPropagation(); openEditModalById('${idea.id}')" title="Редактировать">✏️</button>
+              <button class="swipe-btn delete" onclick="event.stopPropagation(); deleteEventById('${idea.id}')" title="Удалить">🗑️</button>
+            </div>
           </div>
         `;
       }).join('');
@@ -1558,7 +1582,7 @@
           var diffX = e.changedTouches[0].clientX - parseFloat(card.dataset.startX);
           if (diffX < -60) {
             card.classList.add('swiped-left');
-            card.style.transform = 'translateX(-60px)';
+            card.style.transform = 'translateX(-120px)';
           } else {
             card.style.transform = 'translateX(0)';
             card.classList.remove('swiped-left');
