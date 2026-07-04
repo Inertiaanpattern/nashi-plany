@@ -187,30 +187,9 @@
       text-decoration: line-through;
       color: #999;
     }
-    .idea-card .archive-actions {
-      display: none;
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      gap: 4px;
-    }
-    .idea-card.past .archive-actions {
-      display: flex;
-    }
     
-    .archive-btn {
-      background: none;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
-      opacity: 0.7;
-    }
-    .archive-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
-    .archive-btn.delete { color: #e74c3c; }
-    .archive-btn.edit { color: #667eea; }
+    
+    
     .idea-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 4px; }
     .idea-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
     .idea-category {
@@ -223,6 +202,21 @@
     .idea-place a:hover { text-decoration: underline; }
     .idea-time { font-size: 10px; color: #888; margin-top: 2px; }
     .idea-author { font-size: 10px; color: #999; margin-top: 4px; }
+    .delete-btn {
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      background: none;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 2px;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      z-index: 5;
+    }
+    .delete-btn:hover { opacity: 0.8; }
+    .idea-card.past .delete-btn { display: none; }
 
     .empty-state { text-align: center; padding: 40px 16px; color: #aaa; }
     .empty-state-icon { font-size: 36px; margin-bottom: 8px; }
@@ -1219,26 +1213,18 @@
         const timeRange = idea.time ? (idea.timeEnd ? `${idea.time}–${idea.timeEnd}` : idea.time) : '';
         const isPast = idea.date && isEventPast(idea);
         const pastClass = isPast ? 'past' : '';
-        const archiveActions = isPast ? `
-          <div class="archive-actions">
-            <button class="archive-btn edit" onclick="event.stopPropagation(); openEditModalById('${idea.id}')" title="Редактировать">✏️</button>
-            <button class="archive-btn delete" onclick="event.stopPropagation(); deleteEventById('${idea.id}')" title="Удалить">🗑️</button>
-          </div>
-        ` : '';
+        const deleteBtn = !isPast ? `<button class="delete-btn" onclick="event.stopPropagation(); deleteEventById('${idea.id}')" title="Удалить">🗑️</button>` : '';
         return `
-          <div class="idea-card-wrapper" style="position:relative;overflow:hidden;margin-bottom:8px;">
-            <div class="idea-card ${cat.class} ${pastClass}" onclick="openEditModalById('${idea.id}')" data-id="${idea.id}">
-              <div class="idea-title">${escapeHtml(idea.title)}</div>
-              <div class="idea-meta">
-                <span class="idea-category ${cat.class}">${getCategoryName(idea.category)}</span>
-                ${idea.date ? `<span class="idea-date">📅 ${formatDate(idea.date)}</span>` : '<span class="idea-date">📌 Без даты</span>'}
-              </div>
-              ${idea.place ? `<div class="idea-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(idea.place)}" target="_blank">📍 ${escapeHtml(idea.place)}</a></div>` : ''}
-              ${timeRange ? `<div class="idea-time">🕐 ${timeRange}</div>` : ''}
-              ${idea.author ? `<div class="idea-author">👤 ${escapeHtml(idea.author)}</div>` : ''}
-              ${archiveActions}
+          <div class="idea-card ${cat.class} ${pastClass}" onclick="openEditModalById('${idea.id}')" data-id="${idea.id}">
+            <div class="idea-title">${escapeHtml(idea.title)}</div>
+            <div class="idea-meta">
+              <span class="idea-category ${cat.class}">${getCategoryName(idea.category)}</span>
+              ${idea.date ? `<span class="idea-date">📅 ${formatDate(idea.date)}</span>` : '<span class="idea-date">📌 Без даты</span>'}
             </div>
-            <div class="swipe-actions" onclick="deleteEventById('${idea.id}')">🗑️</div>
+            ${idea.place ? `<div class="idea-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(idea.place)}" target="_blank">📍 ${escapeHtml(idea.place)}</a></div>` : ''}
+            ${timeRange ? `<div class="idea-time">🕐 ${timeRange}</div>` : ''}
+            ${idea.author ? `<div class="idea-author">👤 ${escapeHtml(idea.author)}</div>` : ''}
+            ${deleteBtn}
           </div>
         `;
       }).join('');
