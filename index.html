@@ -1124,7 +1124,8 @@
 
     function renderIdeas() {
       const list = document.getElementById('ideasList');
-      const ideas = events.filter(e => !e.date || e.date === '');
+      // Show ALL events in ideas tab, not just those without dates
+      const ideas = events;
 
       if (currentFilter !== 'all') {
         const filtered = ideas.filter(e => e.category === currentFilter);
@@ -1332,8 +1333,9 @@
 
       closeModal();
       renderCalendar();
+      renderIdeas(); // Always update ideas list
       if (document.getElementById('view-ideas').classList.contains('active')) {
-        renderIdeas();
+        // Already rendered above
       }
     }
 
@@ -1348,8 +1350,9 @@
       }
       closeModal();
       renderCalendar();
+      renderIdeas(); // Always update ideas list
       if (document.getElementById('view-ideas').classList.contains('active')) {
-        renderIdeas();
+        // Already rendered above
       }
     }
 
@@ -1364,8 +1367,9 @@
       deleteFromServer(editingId);
       closeModal();
       renderCalendar();
+      renderIdeas(); // Always update ideas list
       if (document.getElementById('view-ideas').classList.contains('active')) {
-        renderIdeas();
+        // Already rendered above
       }
     }
 
