@@ -133,6 +133,7 @@
       font-size: 8px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden;
       text-overflow: ellipsis; cursor: pointer; font-weight: 600; line-height: 1.3;
     }
+    .event-chip.past { opacity: 0.5; text-decoration: line-through; }
     .event-chip.more { background: #f0f0f0; color: #888; text-align: center; font-size: 7px; font-weight: 700; }
 
     .cat-excursions { background: #e8f5e9; color: #2e7d32; }
@@ -396,6 +397,7 @@
       .day-number { font-size: 13px; font-weight: 400; width: 24px; height: 24px; }
       .day-cell { padding: 4px 3px; }
       .event-chip { font-size: 10px; padding: 2px 4px; }
+      .event-chip.past { opacity: 0.5; text-decoration: line-through; }
       .event-chip.more { font-size: 9px; }
       .nav-tab .icon { font-size: 20px; }
       .nav-tab .label { font-size: 10px; }
@@ -941,7 +943,8 @@
               const cat = categories[ev.category] || categories.other;
               const timeRange = ev.time ? (ev.timeEnd ? `${ev.time}–${ev.timeEnd}` : ev.time) : '';
               const timePrefix = timeRange ? `${timeRange} ` : '';
-              eventsHtml += `<div class="event-chip ${cat.class}" title="${ev.title}${ev.place ? ' — ' + ev.place : ''}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">${timePrefix}${ev.title}</div>`;
+              var pastClass = isEventPast(ev) ? ' past' : '';
+            eventsHtml += `<div class="event-chip ${cat.class}${pastClass}" title="${ev.title}${ev.place ? ' — ' + ev.place : ''}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">${timePrefix}${ev.title}</div>`;
             });
             if (dayEvents.length > maxEvents) {
               eventsHtml += `<div class="event-chip more">+${dayEvents.length - maxEvents} ещё</div>`;
@@ -1085,7 +1088,8 @@
           var cat = categories[ev.category] || categories.other;
           var timeRange = ev.time ? (ev.timeEnd ? ev.time + '-' + ev.timeEnd : ev.time) : '';
           var timePrefix = timeRange ? timeRange + ' ' : '';
-          eventsHtml += "<div class=\"event-chip " + cat.class + "\" title=\"" + ev.title + (ev.place ? " - " + ev.place : "") + "\" onclick=\"event.stopPropagation(); openEditModalById('" + ev.id + "')\">" + timePrefix + ev.title + "</div>";
+          var pastClass2 = isEventPast(ev) ? " past" : "";
+          eventsHtml += "<div class=\"event-chip " + cat.class + pastClass2 + "\" title=\"" + ev.title + (ev.place ? " - " + ev.place : "") + "\" onclick=\"event.stopPropagation(); openEditModalById('" + ev.id + "')\">" + timePrefix + ev.title + "</div>";
         }
         cell.innerHTML = "<div class=\"day-number\">" + cellDate.getDate() + "</div><div class=\"day-events\">" + eventsHtml + "</div><div class=\"add-hover\">+</div>";
         var dayNum = cellDate.getDate();
@@ -1143,11 +1147,16 @@
             if (events[e].date === dateStr) { hasEvents = true; break; }
           }
           var isToday = dateStr === todayStr;
+          var isPast = new Date(dateStr + 'T00:00:00') < new Date().setHours(0,0,0,0);
           var style = 'height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;';
           if (isToday) {
             style += 'background:#667eea;color:white;font-weight:700;border-radius:4px;';
+          } else if (hasEvents && isPast) {
+            style += 'background:rgba(200,200,200,0.5);color:#999;font-weight:700;border-radius:50%;text-decoration:line-through;';
           } else if (hasEvents) {
             style += 'background:rgba(102,126,234,0.25);color:#667eea;font-weight:700;border-radius:50%;';
+          } else if (isPast) {
+            style += 'color:#ccc;border-radius:50%;text-decoration:line-through;';
           } else {
             style += 'color:#333;border-radius:50%;';
           }
