@@ -681,8 +681,12 @@
       cats.forEach(function(c) {
         var key = c['Ключ'] || c['key'];
         var name = c['Название'] || c['name'];
-        if (key && name && !categories[key]) {
-          addCategoryToUI(key, name);
+        if (key && name) {
+          // Skip if category with this name already exists (prevents duplicates)
+          var existingKey = Object.keys(categories).find(k => categories[k].name === name);
+          if (!existingKey) {
+            addCategoryToUI(key, name);
+          }
         }
       });
     }
