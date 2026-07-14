@@ -678,13 +678,11 @@
 
     function loadCategoriesFromSheet(cats) {
       if (!cats) return;
-      // Reset first to avoid duplicates from previous sessions
-      resetCategories();
       cats.forEach(function(c) {
         var key = c['Ключ'] || c['key'];
         var name = c['Название'] || c['name'];
         if (key && name) {
-          // Skip base categories (they already exist after reset)
+          // Skip base categories (they already exist)
           var baseNames = Object.values(baseCategories).map(b => b.name);
           if (baseNames.includes(name)) return;
           // Skip if category with this name already exists
