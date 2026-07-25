@@ -165,11 +165,7 @@
     .filter-chip[data-filter="concerts"]:not(.active) { background: #fce4ec; color: #c62828; border-color: #fce4ec; }
     .filter-chip[data-filter="movies"]:not(.active) { background: #f3e5f5; color: #6a1b9a; border-color: #f3e5f5; }
     .filter-chip[data-filter="all"]:not(.active) { background: #f5f5f5; color: #666; border-color: #f5f5f5; }
-    .filter-chip { position: relative; }
-    .filter-chip::after {
-      content: '✏️'; position: absolute; top: -2px; right: -2px; font-size: 9px; opacity: 0.4; pointer-events: none;
-    }
-    .filter-chip.active::after { opacity: 0.6; }
+    
 
     .ideas-list { flex: 1; overflow-y: auto; padding: 8px 12px; -webkit-overflow-scrolling: touch; }
     .idea-card {
@@ -290,6 +286,10 @@
       overflow-y: auto; padding: 16px;
       transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
     }
+    .modal-sheet::-webkit-scrollbar { width: 6px; }
+    .modal-sheet::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+    .modal-sheet::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+    .modal-sheet::-webkit-scrollbar-thumb:hover { background: #bbb; }
     .modal-overlay.show .modal-sheet { transform: translateY(0); }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-title { font-size: 17px; font-weight: 700; color: #333; }
@@ -441,15 +441,17 @@
       .filter-chip[data-filter="concerts"]:not(.active) { background: #fce4ec; color: #c62828; border-color: #fce4ec; }
       .filter-chip[data-filter="movies"]:not(.active) { background: #f3e5f5; color: #6a1b9a; border-color: #f3e5f5; }
       .filter-chip[data-filter="all"]:not(.active) { background: #f5f5f5; color: #666; border-color: #f5f5f5; }
-    .filter-chip { position: relative; }
-    .filter-chip::after {
-      content: '✏️'; position: absolute; top: -2px; right: -2px; font-size: 9px; opacity: 0.4; pointer-events: none;
-    }
-    .filter-chip.active::after { opacity: 0.6; }
+    
       .empty-state-text { font-size: 15px; }
       .modal-overlay { align-items: center !important; }
       .modal-sheet { max-width: 420px; border-radius: 16px !important; transform: translateY(20px) !important; }
       .modal-overlay.show .modal-sheet { transform: translateY(0) !important; }
+      .modal-sheet::-webkit-scrollbar { width: 10px; }
+      .modal-sheet::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+      .modal-sheet::-webkit-scrollbar-thumb:hover { background: #999; border: 2px solid transparent; background-clip: padding-box; }
+      .cat-editor-sheet::-webkit-scrollbar { width: 10px; }
+      .cat-editor-sheet::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+      .cat-editor-sheet::-webkit-scrollbar-thumb:hover { background: #999; border: 2px solid transparent; background-clip: padding-box; }
     }
 
     /* === РЕДАКТОР КАТЕГОРИЙ === */
@@ -470,6 +472,10 @@
       overflow-y: auto; padding: 16px;
       transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
     }
+    .cat-editor-sheet::-webkit-scrollbar { width: 6px; }
+    .cat-editor-sheet::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+    .cat-editor-sheet::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+    .cat-editor-sheet::-webkit-scrollbar-thumb:hover { background: #bbb; }
     .cat-editor-overlay.show .cat-editor-sheet { transform: translateY(0); }
     .cat-editor-list { margin-top: 8px; }
     .cat-editor-item {
@@ -1722,6 +1728,17 @@
       const savedView = localStorage.getItem('lastView');
       if (savedView === 'ideas') {
         switchView('ideas');
+      }
+      // Check for shared event in URL hash
+      var hash = location.hash;
+      if (hash && hash.startsWith('#event=')) {
+        var sharedId = decodeURIComponent(hash.substring(7));
+        setTimeout(function() {
+          var ev = events.find(e => String(e.id) === sharedId);
+          if (ev) {
+            openEditModal(ev);
+          }
+        }, 500);
       }
     });
 
