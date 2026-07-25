@@ -17,6 +17,7 @@
   <meta property="og:title" content="Туда-сюда">
   <meta property="og:description" content="Посмотри, что запланировано!">
   <meta property="og:type" content="website">
+  <meta property="og:image" content="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f4c5.png">
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi0KLQvtGA0LPQvtC90YsiLCJzaG9ydF9uYW1lIjoi0KLQvtGA0LPQvtC90YsiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2YwZjBmMCIsInRoZW1lX2NvbG9yIjoiIzY2N2VlYSJ9">
 
   <!-- ============================================ -->
@@ -295,6 +296,8 @@
     .modal-sheet::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
     .modal-sheet::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
     .modal-sheet::-webkit-scrollbar-thumb:hover { background: #bbb; }
+    @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+    @keyframes toastOut { from { opacity:1; transform:translateX(-50%) translateY(0); } to { opacity:0; transform:translateX(-50%) translateY(20px); } }
     .modal-overlay.show .modal-sheet { transform: translateY(0); }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-title { font-size: 17px; font-weight: 700; color: #333; }
@@ -1734,14 +1737,19 @@
       if (savedView === 'ideas') {
         switchView('ideas');
       }
-      // Check for shared event in URL hash
+      // Check for shared event in URL hash or search
+      var sharedId = null;
       var hash = location.hash;
+      var search = location.search;
       if (hash && hash.startsWith('#event=')) {
-        var sharedId = decodeURIComponent(hash.substring(7));
+        sharedId = decodeURIComponent(hash.substring(7));
+      } else if (search && search.startsWith('?event=')) {
+        sharedId = decodeURIComponent(search.substring(7));
+      }
+      if (sharedId) {
         setTimeout(function() {
           var ev = events.find(e => String(e.id) === sharedId);
           if (ev) {
-            // If event has a date, switch to calendar and jump to that month
             if (ev.date) {
               var parts = ev.date.split('-');
               if (parts.length === 3) {
