@@ -313,7 +313,7 @@
     .cat-option.selected { border-color: #667eea; box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2); }
     .cat-option.pressing { transform: scale(0.96); opacity: 0.8; }
     .cat-option::after {
-      content: '✏️'; position: absolute; top: 2px; right: 4px; font-size: 9px; opacity: 0.3;
+      content: '✏️'; position: absolute; top: 2px; right: 4px; font-size: 11px; opacity: 0.5;
     }
 
     /* === ВЫБОР АВТОРА === */
@@ -1372,7 +1372,8 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'flex';
-            document.getElementById('btnSave').textContent = 'Сохранить изменения';
+      document.getElementById('shareAction').style.display = 'flex';
+      document.getElementById('btnSave').textContent = 'Сохранить изменения';
 
       const btnCancelOrRemove = document.getElementById('btnCancelOrRemove');
       if (!ev.date || ev.date === '') {
@@ -1638,7 +1639,66 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      
+      // Long-press on category options to open editor
+      var catOptionsContainer = document.getElementById('categoryOptions');
+      if (catOptionsContainer) {
+        var pressTimer = null;
+        var pressTarget = null;
+        catOptionsContainer.addEventListener('touchstart', function(e) {
+          var target = e.target.closest('.cat-option');
+          if (!target) return;
+          pressTarget = target;
+          target.classList.add('pressing');
+          pressTimer = setTimeout(function() {
+            if (pressTarget) {
+              pressTarget.classList.remove('pressing');
+              var key = pressTarget.dataset.cat;
+              if (key) openCategoryEditor(key);
+              pressTarget = null;
+            }
+          }, 600);
+        }, {passive: true});
+        catOptionsContainer.addEventListener('touchend', function(e) {
+          if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+          if (pressTarget) { pressTarget.classList.remove('pressing'); pressTarget = null; }
+        }, {passive: true});
+        catOptionsContainer.addEventListener('touchmove', function(e) {
+          if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+          if (pressTarget) { pressTarget.classList.remove('pressing'); pressTarget = null; }
+        }, {passive: true});
+        catOptionsContainer.addEventListener('mousedown', function(e) {
+          var target = e.target.closest('.cat-option');
+          if (!target) return;
+          if (e.button === 2) {
+            e.preventDefault();
+            var key = target.dataset.cat;
+            if (key) openCategoryEditor(key);
+            return;
+          }
+          pressTarget = target;
+          target.classList.add('pressing');
+          pressTimer = setTimeout(function() {
+            if (pressTarget) {
+              pressTarget.classList.remove('pressing');
+              var key = pressTarget.dataset.cat;
+              if (key) openCategoryEditor(key);
+              pressTarget = null;
+            }
+          }, 600);
+        });
+        catOptionsContainer.addEventListener('mouseup', function(e) {
+          if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+          if (pressTarget) { pressTarget.classList.remove('pressing'); pressTarget = null; }
+        });
+        catOptionsContainer.addEventListener('mouseleave', function(e) {
+          if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+          if (pressTarget) { pressTarget.classList.remove('pressing'); pressTarget = null; }
+        });
+        catOptionsContainer.addEventListener('contextmenu', function(e) {
+          var target = e.target.closest('.cat-option');
+          if (target) { e.preventDefault(); }
+        });
+      }
 
       calendarView = 'month';
       var viewButtons = document.querySelectorAll('.view-btn');
