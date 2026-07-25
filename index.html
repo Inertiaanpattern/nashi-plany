@@ -308,8 +308,13 @@
     .cat-option {
       padding: 8px; border-radius: 8px; text-align: center; font-size: 11px; font-weight: 600;
       cursor: pointer; border: 2px solid transparent; transition: all 0.2s; touch-action: manipulation;
+      position: relative; overflow: hidden;
     }
     .cat-option.selected { border-color: #667eea; box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2); }
+    .cat-option.pressing { transform: scale(0.96); opacity: 0.8; }
+    .cat-option::after {
+      content: '✏️'; position: absolute; top: 2px; right: 4px; font-size: 9px; opacity: 0.3;
+    }
 
     /* === ВЫБОР АВТОРА === */
     .author-options { display: flex; gap: 8px; }
@@ -580,7 +585,6 @@
           <div class="cat-option cat-other" data-cat="other" onclick="selectCategory(this)">✨ Другое</div>
         </div>
         <button type="button" class="add-category-btn" onclick="showCustomCategory()">+ Добавить свою категорию</button>
-        <button type="button" class="cat-editor-btn" onclick="openCategoryEditor()">⚙️ Управление категориями</button>
         <div class="custom-category-input" id="customCategoryInput">
           <input type="text" class="form-input" id="inputCustomCategory" placeholder="Например: Дни рождения">
           <button type="button" class="btn-submit" style="margin-top: 8px;" onclick="addCustomCategory()">Добавить</button>
@@ -617,12 +621,11 @@
         <textarea class="form-textarea" id="inputDesc" placeholder="Дополнительные детали..."></textarea>
       </div>
       <button class="btn-submit" onclick="saveEvent()" id="btnSave">Сохранить</button>
-      <div class="btn-row" id="shareBtnRow" style="display:none;">
+      <div class="btn-row" id="shareAction" style="display:none;">
         <button class="btn-submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;" onclick="shareCurrentEvent()">🔗 Поделиться</button>
       </div>
       <div class="btn-row" id="editActions" style="display:none;">
         <button class="btn-submit btn-secondary" onclick="cancelEdit()" id="btnCancelOrRemove">Отмена</button>
-        <button class="btn-submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;" onclick="shareCurrentEvent()">🔗 Поделиться</button>
         <button class="btn-submit btn-danger" onclick="deleteEvent()">Удалить</button>
       </div>
     </div>
@@ -1348,8 +1351,7 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'none';
-      document.getElementById('shareBtnRow').style.display = 'none';
-      document.getElementById('btnSave').textContent = 'Сохранить';
+            document.getElementById('btnSave').textContent = 'Сохранить';
     }
 
     function openEditModal(ev) {
@@ -1370,8 +1372,7 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'flex';
-      document.getElementById('shareBtnRow').style.display = 'flex';
-      document.getElementById('btnSave').textContent = 'Сохранить изменения';
+            document.getElementById('btnSave').textContent = 'Сохранить изменения';
 
       const btnCancelOrRemove = document.getElementById('btnCancelOrRemove');
       if (!ev.date || ev.date === '') {
@@ -1391,8 +1392,7 @@
 
     function closeModal() {
       document.getElementById('modal').classList.remove('show');
-      document.getElementById('shareBtnRow').style.display = 'none';
-      editingId = null;
+            editingId = null;
       selectedDate = null;
     }
 
@@ -1531,17 +1531,12 @@
           const popupStyle = cat.class === 'cat-custom' && cat.color ? `style="background:${cat.bg || cat.color + '22'};border-color:${cat.color}"` : `style="background: ${cat.bg}; border-color: ${cat.color}"`;
           const titleStyle = cat.class === 'cat-custom' && cat.color ? `style="color:${cat.color}"` : `style="color: ${cat.color}"`;
           return `
-            <div class="day-popup-event ${cat.class}" ${popupStyle}>
-              <div onclick="event.stopPropagation(); openEditModalById('${ev.id}')">
-                <div class="day-popup-event-title" ${titleStyle}>${ev.title}</div>
-                ${timeRange ? `<div class="day-popup-event-time">🕐 ${timeRange}</div>` : ''}
-                ${ev.place ? `<div class="day-popup-event-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(ev.place)}" target="_blank">📍 ${escapeHtml(ev.place)}</a></div>` : ''}
-                ${ev.author ? `<div class="day-popup-event-author">👤 ${escapeHtml(ev.author)}</div>` : ''}
-                ${ev.desc ? `<div class="day-popup-event-place">📝 ${ev.desc}</div>` : ''}
-              </div>
-              <div class="day-popup-event-share">
-                <button onclick="event.stopPropagation(); shareEvent('${ev.id}', this)" title="Поделиться">🔗 Поделиться</button>
-              </div>
+            <div class="day-popup-event ${cat.class}" ${popupStyle} onclick="event.stopPropagation(); openEditModalById('${ev.id}')">
+              <div class="day-popup-event-title" ${titleStyle}>${ev.title}</div>
+              ${timeRange ? `<div class="day-popup-event-time">🕐 ${timeRange}</div>` : ''}
+              ${ev.place ? `<div class="day-popup-event-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(ev.place)}" target="_blank">📍 ${escapeHtml(ev.place)}</a></div>` : ''}
+              ${ev.author ? `<div class="day-popup-event-author">👤 ${escapeHtml(ev.author)}</div>` : ''}
+              ${ev.desc ? `<div class="day-popup-event-place">📝 ${ev.desc}</div>` : ''}
             </div>
           `;
         }).join('');
@@ -1677,9 +1672,15 @@
       '#ff5722', '#00bcd4', '#795548', '#3f51b5', '#8bc34a', '#ff9800'
     ];
 
-    function openCategoryEditor() {
+    function openCategoryEditor(focusKey) {
       renderCategoryEditor();
       document.getElementById('catEditorModal').classList.add('show');
+      if (focusKey) {
+        setTimeout(function() {
+          var input = document.querySelector('.cat-editor-item[data-cat-key="' + focusKey + '"] .cat-editor-name');
+          if (input) { input.focus(); input.select(); }
+        }, 300);
+      }
     }
 
     function closeCategoryEditor() {
