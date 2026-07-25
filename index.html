@@ -617,8 +617,12 @@
         <textarea class="form-textarea" id="inputDesc" placeholder="Дополнительные детали..."></textarea>
       </div>
       <button class="btn-submit" onclick="saveEvent()" id="btnSave">Сохранить</button>
+      <div class="btn-row" id="shareBtnRow" style="display:none;">
+        <button class="btn-submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;" onclick="shareCurrentEvent()">🔗 Поделиться</button>
+      </div>
       <div class="btn-row" id="editActions" style="display:none;">
         <button class="btn-submit btn-secondary" onclick="cancelEdit()" id="btnCancelOrRemove">Отмена</button>
+        <button class="btn-submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;" onclick="shareCurrentEvent()">🔗 Поделиться</button>
         <button class="btn-submit btn-danger" onclick="deleteEvent()">Удалить</button>
       </div>
     </div>
@@ -1344,6 +1348,7 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'none';
+      document.getElementById('shareBtnRow').style.display = 'none';
       document.getElementById('btnSave').textContent = 'Сохранить';
     }
 
@@ -1365,6 +1370,7 @@
 
       document.getElementById('modal').classList.add('show');
       document.getElementById('editActions').style.display = 'flex';
+      document.getElementById('shareBtnRow').style.display = 'flex';
       document.getElementById('btnSave').textContent = 'Сохранить изменения';
 
       const btnCancelOrRemove = document.getElementById('btnCancelOrRemove');
@@ -1385,6 +1391,7 @@
 
     function closeModal() {
       document.getElementById('modal').classList.remove('show');
+      document.getElementById('shareBtnRow').style.display = 'none';
       editingId = null;
       selectedDate = null;
     }
@@ -1576,6 +1583,11 @@
         return `style="background:${cat.bg || cat.color + '22'};color:${cat.color};border-color:${cat.color}"`;
       }
       return '';
+    }
+
+    function shareCurrentEvent() {
+      if (!editingId) return;
+      shareEvent(editingId, { textContent: '🔗 Поделиться', classList: { add: function(){}, remove: function(){} } });
     }
 
     function shareEvent(id, btn) {
