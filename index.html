@@ -370,6 +370,17 @@
     .day-popup-event-place a { color: inherit; text-decoration: none; }
     .day-popup-event-place a:hover { text-decoration: underline; }
     .day-popup-event-author { font-size: 10px; color: #999; margin-top: 2px; }
+    .day-popup-event-share {
+      margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.1);
+      display: flex; justify-content: flex-end;
+    }
+    .day-popup-event-share button {
+      background: none; border: none; font-size: 13px; cursor: pointer;
+      padding: 2px 6px; border-radius: 6px; opacity: 0.6;
+      transition: opacity 0.2s; color: inherit;
+    }
+    .day-popup-event-share button:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+    .day-popup-event-share button.copied { opacity: 1; color: #4caf50; }
     .day-popup-add { padding: 8px 16px; border-top: 1px solid #f0f0f0; text-align: center; }
     .day-popup-add-btn {
       background: none; border: 2px dashed #667eea; color: #667eea; padding: 8px 16px;
@@ -426,6 +437,60 @@
       .modal-overlay { align-items: center !important; }
       .modal-sheet { max-width: 420px; border-radius: 16px !important; transform: translateY(20px) !important; }
       .modal-overlay.show .modal-sheet { transform: translateY(0) !important; }
+    }
+
+    /* === РЕДАКТОР КАТЕГОРИЙ === */
+    .cat-editor-btn {
+      background: none; border: 1px dashed #999; color: #666;
+      padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
+      cursor: pointer; width: 100%; margin-top: 6px; touch-action: manipulation;
+    }
+    .cat-editor-btn:active { background: #f5f5f5; }
+    .cat-editor-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4); z-index: 1001; justify-content: center; align-items: flex-end;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .cat-editor-overlay.show { display: flex; opacity: 1; }
+    .cat-editor-sheet {
+      background: white; width: 100%; max-height: 80vh; border-radius: 20px 20px 0 0;
+      overflow-y: auto; padding: 16px;
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .cat-editor-overlay.show .cat-editor-sheet { transform: translateY(0); }
+    .cat-editor-list { margin-top: 8px; }
+    .cat-editor-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px;
+      border-radius: 10px; background: #fafafa; margin-bottom: 6px;
+    }
+    .cat-editor-color {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
+      border: 2px solid transparent; transition: transform 0.15s;
+    }
+    .cat-editor-color:active { transform: scale(0.9); }
+    .cat-editor-name {
+      flex: 1; font-size: 14px; font-weight: 600; color: #333;
+      background: none; border: none; padding: 0;
+    }
+    .cat-editor-name:focus { outline: none; }
+    .cat-editor-actions { display: flex; gap: 4px; }
+    .cat-editor-action {
+      background: none; border: none; font-size: 16px; cursor: pointer;
+      padding: 4px; border-radius: 6px; opacity: 0.6; transition: opacity 0.2s;
+    }
+    .cat-editor-action:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+    .cat-editor-palette {
+      display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 0;
+    }
+    .cat-editor-palette-color {
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: transform 0.15s;
+    }
+    .cat-editor-palette-color.selected { border-color: #333; transform: scale(1.1); }
+    .cat-editor-palette-color:active { transform: scale(0.9); }
+    .cat-editor-new {
+      display: flex; gap: 8px; align-items: center; margin-top: 12px;
+      padding-top: 12px; border-top: 1px solid #eee;
     }
   </style>
   <!-- === КОНЕЦ CSS === -->
@@ -515,6 +580,7 @@
           <div class="cat-option cat-other" data-cat="other" onclick="selectCategory(this)">✨ Другое</div>
         </div>
         <button type="button" class="add-category-btn" onclick="showCustomCategory()">+ Добавить свою категорию</button>
+        <button type="button" class="cat-editor-btn" onclick="openCategoryEditor()">⚙️ Управление категориями</button>
         <div class="custom-category-input" id="customCategoryInput">
           <input type="text" class="form-input" id="inputCustomCategory" placeholder="Например: Дни рождения">
           <button type="button" class="btn-submit" style="margin-top: 8px;" onclick="addCustomCategory()">Добавить</button>
@@ -948,9 +1014,9 @@
             dayEvents.slice(0, maxEvents).forEach(ev => {
               const cat = categories[ev.category] || categories.other;
               const timeRange = ev.time ? (ev.timeEnd ? `${ev.time}–${ev.timeEnd}` : ev.time) : '';
-              const timePrefix = timeRange ? `${timeRange} ` : '';
               var pastClass = isEventPast(ev) ? ' past' : '';
-            eventsHtml += `<div class="event-chip ${cat.class}${pastClass}" title="${ev.title}${ev.place ? ' — ' + ev.place : ''}${ev.time ? ' (' + ev.time + (ev.timeEnd ? '–' + ev.timeEnd : '') + ')' : ''}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">${ev.time ? `<b>${ev.time}${ev.timeEnd ? '–'+ev.timeEnd : ''}</b><br>` : ''}${ev.title}</div>`;
+              const catStyle = getCatStyle(cat);
+            eventsHtml += `<div class="event-chip ${cat.class}${pastClass}" ${catStyle} title="${ev.title}${ev.place ? ' — ' + ev.place : ''}${ev.time ? ' (' + ev.time + (ev.timeEnd ? '–' + ev.timeEnd : '') + ')' : ''}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">${ev.time ? `<b>${ev.time}${ev.timeEnd ? '–'+ev.timeEnd : ''}</b><br>` : ''}${ev.title}</div>`;
             });
             if (dayEvents.length > maxEvents) {
               eventsHtml += `<div class="event-chip more">+${dayEvents.length - maxEvents} ещё</div>`;
@@ -1098,7 +1164,7 @@
           var timeRange = ev.time ? (ev.timeEnd ? ev.time + '-' + ev.timeEnd : ev.time) : '';
           var timePrefix = timeRange ? timeRange + ' ' : '';
           var pastClass2 = isEventPast(ev) ? " past" : "";
-          eventsHtml += "<div class=\"event-chip " + cat.class + pastClass2 + "\" title=\"" + ev.title + (ev.place ? " - " + ev.place : "") + (ev.time ? " (" + ev.time + (ev.timeEnd ? "-" + ev.timeEnd : "") + ")" : "") + "\" onclick=\"event.stopPropagation(); openEditModalById('" + ev.id + "')\">" + (ev.time ? "<b>" + ev.time + (ev.timeEnd ? "-" + ev.timeEnd : "") + "</b><br>" : "") + ev.title + "</div>";
+          var catStyle2 = getCatStyle(cat); eventsHtml += "<div class=\"event-chip " + cat.class + pastClass2 + "\" " + catStyle2 + " title=\"" + ev.title + (ev.place ? " - " + ev.place : "") + (ev.time ? " (" + ev.time + (ev.timeEnd ? "-" + ev.timeEnd : "") + ")" : "") + "\" onclick=\"event.stopPropagation(); openEditModalById('" + ev.id + "')\">" + (ev.time ? "<b>" + ev.time + (ev.timeEnd ? "-" + ev.timeEnd : "") + "</b><br>" : "") + ev.title + "</div>";
         }
         cell.innerHTML = "<div class=\"day-number\">" + cellDate.getDate() + "</div><div class=\"day-events\">" + eventsHtml + "</div><div class=\"add-hover\">+</div>";
         var dayNum = cellDate.getDate();
@@ -1223,11 +1289,12 @@
         const isPast = idea.date && isEventPast(idea);
         const pastClass = isPast ? 'past' : '';
         const deleteBtn = !isPast ? `<button class="delete-btn" onclick="event.stopPropagation(); deleteEventById('${idea.id}')" title="Удалить">🗑️</button>` : '';
+        const catStyle = getCatStyle(cat);
         return `
-          <div class="idea-card ${cat.class} ${pastClass}" onclick="openEditModalById('${idea.id}')" data-id="${idea.id}">
+          <div class="idea-card ${cat.class} ${pastClass}" onclick="openEditModalById('${idea.id}')" data-id="${idea.id}" ${catStyle}>
             <div class="idea-title">${escapeHtml(idea.title)}</div>
             <div class="idea-meta">
-              <span class="idea-category ${cat.class}">${getCategoryName(idea.category)}</span>
+              <span class="idea-category ${cat.class}" ${catStyle}>${getCategoryName(idea.category)}</span>
               ${idea.date ? `<span class="idea-date">📅 ${formatDate(idea.date)}</span>` : '<span class="idea-date">📌 Без даты</span>'}
             </div>
             ${idea.place ? `<div class="idea-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(idea.place)}" target="_blank">📍 ${escapeHtml(idea.place)}</a></div>` : ''}
@@ -1454,13 +1521,20 @@
         container.innerHTML = dayEvents.map(ev => {
           const cat = categories[ev.category] || categories.other;
           const timeRange = ev.time ? (ev.timeEnd ? `${ev.time} – ${ev.timeEnd}` : ev.time) : '';
+          const popupStyle = cat.class === 'cat-custom' && cat.color ? `style="background:${cat.bg || cat.color + '22'};border-color:${cat.color}"` : `style="background: ${cat.bg}; border-color: ${cat.color}"`;
+          const titleStyle = cat.class === 'cat-custom' && cat.color ? `style="color:${cat.color}"` : `style="color: ${cat.color}"`;
           return `
-            <div class="day-popup-event ${cat.class}" style="background: ${cat.bg}; border-color: ${cat.color}" onclick="event.stopPropagation(); openEditModalById('${ev.id}')">
-              <div class="day-popup-event-title" style="color: ${cat.color}">${ev.title}</div>
-              ${timeRange ? `<div class="day-popup-event-time">🕐 ${timeRange}</div>` : ''}
-              ${ev.place ? `<div class="day-popup-event-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(ev.place)}" target="_blank">📍 ${escapeHtml(ev.place)}</a></div>` : ''}
-              ${ev.author ? `<div class="day-popup-event-author">👤 ${escapeHtml(ev.author)}</div>` : ''}
-              ${ev.desc ? `<div class="day-popup-event-place">📝 ${ev.desc}</div>` : ''}
+            <div class="day-popup-event ${cat.class}" ${popupStyle}>
+              <div onclick="event.stopPropagation(); openEditModalById('${ev.id}')">
+                <div class="day-popup-event-title" ${titleStyle}>${ev.title}</div>
+                ${timeRange ? `<div class="day-popup-event-time">🕐 ${timeRange}</div>` : ''}
+                ${ev.place ? `<div class="day-popup-event-place"><a href="https://yandex.ru/maps/?text=${encodeURIComponent(ev.place)}" target="_blank">📍 ${escapeHtml(ev.place)}</a></div>` : ''}
+                ${ev.author ? `<div class="day-popup-event-author">👤 ${escapeHtml(ev.author)}</div>` : ''}
+                ${ev.desc ? `<div class="day-popup-event-place">📝 ${ev.desc}</div>` : ''}
+              </div>
+              <div class="day-popup-event-share">
+                <button onclick="event.stopPropagation(); shareEvent('${ev.id}', this)" title="Поделиться">🔗 Поделиться</button>
+              </div>
             </div>
           `;
         }).join('');
@@ -1496,6 +1570,59 @@
       });
     }
 
+    function getCatStyle(cat) {
+      if (!cat) return '';
+      if (cat.class === 'cat-custom' && cat.color) {
+        return `style="background:${cat.bg || cat.color + '22'};color:${cat.color};border-color:${cat.color}"`;
+      }
+      return '';
+    }
+
+    function shareEvent(id, btn) {
+      const ev = events.find(e => String(e.id) === String(id));
+      if (!ev) return;
+      const cat = categories[ev.category] || categories.other;
+      const timeRange = ev.time ? (ev.timeEnd ? ev.time + '–' + ev.timeEnd : ev.time) : '';
+      const dateText = ev.date ? formatDate(ev.date) : 'Без даты';
+      const shareText = '📅 Туда-сюда\n' +
+        (cat.name ? cat.name + '\n' : '') +
+        '✨ ' + ev.title + '\n' +
+        '📅 ' + dateText +
+        (timeRange ? '\n🕐 ' + timeRange : '') +
+        (ev.place ? '\n📍 ' + ev.place : '') +
+        (ev.author ? '\n👤 ' + ev.author : '') +
+        (ev.desc ? '\n📝 ' + ev.desc : '');
+
+      if (navigator.share) {
+        navigator.share({
+          title: ev.title,
+          text: shareText
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(shareText).then(() => {
+          btn.textContent = '✅ Скопировано';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = '🔗 Поделиться';
+            btn.classList.remove('copied');
+          }, 2000);
+        }).catch(() => {
+          // Fallback for older browsers
+          const ta = document.createElement('textarea');
+          ta.value = shareText;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          btn.textContent = '✅ Скопировано';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = '🔗 Поделиться';
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      }
+    }
     function escapeHtml(text) {
       if (!text) return '';
       const div = document.createElement('div');
@@ -1530,7 +1657,181 @@
     document.getElementById('dayPopup').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeDayPopup();
     });
+
+    // === РЕДАКТОР КАТЕГОРИЙ ===
+    let editingCategoryKey = null;
+    const paletteColors = [
+      '#4caf50', '#ffc107', '#2196f3', '#e91e63', '#9c27b0', '#607d8b',
+      '#ff5722', '#00bcd4', '#795548', '#3f51b5', '#8bc34a', '#ff9800'
+    ];
+
+    function openCategoryEditor() {
+      renderCategoryEditor();
+      document.getElementById('catEditorModal').classList.add('show');
+    }
+
+    function closeCategoryEditor() {
+      document.getElementById('catEditorModal').classList.remove('show');
+      editingCategoryKey = null;
+    }
+
+    function renderCategoryEditor() {
+      const list = document.getElementById('catEditorList');
+      list.innerHTML = Object.entries(categories).map(([key, cat]) => {
+        const isBase = !!baseCategories[key];
+        const color = cat.color || '#999';
+        return `
+          <div class="cat-editor-item" data-cat-key="${key}">
+            <div class="cat-editor-color" style="background:${color}" onclick="showColorPalette('${key}')"></div>
+            <input type="text" class="cat-editor-name" value="${cat.name}" 
+              onchange="updateCategoryName('${key}', this.value)"
+              onkeydown="if(event.key==='Enter'){this.blur();updateCategoryName('${key}',this.value);}">
+            <div class="cat-editor-actions">
+              ${!isBase ? `<button class="cat-editor-action" onclick="deleteCategory('${key}')" title="Удалить">🗑️</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showColorPalette(key) {
+      editingCategoryKey = key;
+      const item = document.querySelector(`.cat-editor-item[data-cat-key="${key}"]`);
+      if (!item) return;
+      // Remove existing palette if any
+      const existing = item.querySelector('.cat-editor-palette');
+      if (existing) { existing.remove(); return; }
+      const currentColor = categories[key].color || '#999';
+      const palette = document.createElement('div');
+      palette.className = 'cat-editor-palette';
+      palette.innerHTML = paletteColors.map(c => 
+        `<div class="cat-editor-palette-color ${c === currentColor ? 'selected' : ''}" style="background:${c}" onclick="updateCategoryColor('${key}', '${c}')"></div>`
+      ).join('');
+      item.appendChild(palette);
+    }
+
+    function updateCategoryName(key, newName) {
+      newName = newName.trim();
+      if (!newName) return;
+      if (categories[key]) {
+        categories[key].name = newName;
+        // Update filter chip text
+        const filterChip = document.querySelector(`.filter-chip[data-filter="${key}"]`);
+        if (filterChip) filterChip.textContent = newName;
+        // Update cat-option text
+        const catOption = document.querySelector(`.cat-option[data-cat="${key}"]`);
+        if (catOption) {
+          const emoji = baseCategories[key] ? catOption.textContent.match(/^[^\s]+/) : '✨';
+          catOption.textContent = emoji + ' ' + newName;
+        }
+        // Re-render ideas if visible
+        if (document.getElementById('view-ideas').classList.contains('active')) {
+          renderIdeas();
+        }
+        renderCalendar();
+      }
+    }
+
+    function updateCategoryColor(key, color) {
+      if (categories[key]) {
+        categories[key].color = color;
+        categories[key].bg = color + '22'; // 22 = ~13% opacity
+        // Update visual elements
+        const catOption = document.querySelector(`.cat-option[data-cat="${key}"]`);
+        if (catOption) {
+          catOption.style.background = color + '22';
+          catOption.style.color = color;
+        }
+        // Remove palette
+        const palette = document.querySelector(`.cat-editor-item[data-cat-key="${key}"] .cat-editor-palette`);
+        if (palette) palette.remove();
+        // Update color circle
+        const circle = document.querySelector(`.cat-editor-item[data-cat-key="${key}"] .cat-editor-color`);
+        if (circle) circle.style.background = color;
+        // Re-render
+        if (document.getElementById('view-ideas').classList.contains('active')) {
+          renderIdeas();
+        }
+        renderCalendar();
+      }
+    }
+
+    function deleteCategory(key) {
+      if (baseCategories[key]) {
+        alert('Базовые категории нельзя удалить');
+        return;
+      }
+      if (!confirm('Удалить категорию "' + categories[key].name + '"? События этой категории станут "Другими". Это действие нельзя отменить.')) return;
+      // Reassign events to 'other'
+      events.forEach(function(ev) {
+        if (ev.category === key) ev.category = 'other';
+      });
+      delete categories[key];
+      // Remove from DOM
+      const catOption = document.querySelector(`.cat-option[data-cat="${key}"]`);
+      if (catOption) catOption.remove();
+      const filterChip = document.querySelector(`.filter-chip[data-filter="${key}"]`);
+      if (filterChip) filterChip.remove();
+      // Re-render
+      renderCategoryEditor();
+      if (document.getElementById('view-ideas').classList.contains('active')) {
+        renderIdeas();
+      }
+      renderCalendar();
+    }
+
+    function addNewCategoryFromEditor() {
+      const name = document.getElementById('newCatName').value.trim();
+      if (!name) return;
+      var existingKey = Object.keys(categories).find(k => categories[k].name === name);
+      if (existingKey) {
+        alert('Категория "' + name + '" уже существует');
+        return;
+      }
+      const key = 'custom_' + Date.now();
+      const color = paletteColors[Math.floor(Math.random() * paletteColors.length)];
+      categories[key] = { name: name, class: 'cat-custom', color: color, bg: color + '22' };
+      // Add to modal
+      const div = document.createElement('div');
+      div.className = 'cat-option cat-custom';
+      div.dataset.cat = key;
+      div.style.background = color + '22';
+      div.style.color = color;
+      div.onclick = function() { selectCategory(this); };
+      div.textContent = '✨ ' + name;
+      document.getElementById('categoryOptions').appendChild(div);
+      // Add to filters
+      const filterDiv = document.createElement('div');
+      filterDiv.className = 'filter-chip';
+      filterDiv.onclick = function() { filterIdeas(key); };
+      filterDiv.dataset.filter = key;
+      filterDiv.textContent = name;
+      document.getElementById('ideasFilter').appendChild(filterDiv);
+      // Save to server
+      saveCategoryToServer(key, name);
+      // Clear input and re-render editor
+      document.getElementById('newCatName').value = '';
+      renderCategoryEditor();
+    }
+
+    document.getElementById('catEditorModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeCategoryEditor();
+    });
   </script>
   <!-- === КОНЕЦ JS === -->
+
+  <div class="cat-editor-overlay" id="catEditorModal">
+    <div class="cat-editor-sheet">
+      <div class="modal-header">
+        <div class="modal-title">Категории</div>
+        <button class="modal-close" onclick="closeCategoryEditor()">✕</button>
+      </div>
+      <div class="cat-editor-list" id="catEditorList"></div>
+      <div class="cat-editor-new">
+        <input type="text" class="form-input" id="newCatName" placeholder="Новая категория" style="flex:1;font-size:14px;padding:8px 12px;">
+        <button class="btn-submit" style="width:auto;padding:8px 16px;margin-top:0;font-size:13px;" onclick="addNewCategoryFromEditor()">+ Добавить</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
