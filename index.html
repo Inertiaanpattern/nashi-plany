@@ -13,6 +13,11 @@
   <link rel="apple-touch-icon" sizes="76x76" href="apple-touch-icon-76x76.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>Туда-сюда</title>
+  <meta name="description" content="Календарь планов и идей">
+  <meta property="og:title" content="Туда-сюда">
+  <meta property="og:description" content="Посмотри, что запланировано!">
+  <meta property="og:type" content="website">
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi0KLQvtGA0LPQvtC90YsiLCJzaG9ydF9uYW1lIjoi0KLQvtGA0LPQvtC90YsiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2YwZjBmMCIsInRoZW1lX2NvbG9yIjoiIzY2N2VlYSJ9">
 
   <!-- ============================================ -->
   <!-- === CSS === -->
@@ -1736,6 +1741,14 @@
         setTimeout(function() {
           var ev = events.find(e => String(e.id) === sharedId);
           if (ev) {
+            // If event has a date, switch to calendar and jump to that month
+            if (ev.date) {
+              var parts = ev.date.split('-');
+              if (parts.length === 3) {
+                currentDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+                renderCalendar();
+              }
+            }
             openEditModal(ev);
           }
         }, 500);
