@@ -1841,19 +1841,26 @@
       if (categories[key]) {
         categories[key].color = color;
         categories[key].bg = color + '22'; // 22 = ~13% opacity
-        // Update visual elements
+        // Update cat-option in modal
         const catOption = document.querySelector(`.cat-option[data-cat="${key}"]`);
         if (catOption) {
           catOption.style.background = color + '22';
           catOption.style.color = color;
         }
-        // Remove palette
-        const palette = document.querySelector(`.cat-editor-item[data-cat-key="${key}"] .cat-editor-palette`);
-        if (palette) palette.remove();
-        // Update color circle
+        // Update filter-chip in ideas tab
+        const filterChip = document.querySelector(`.filter-chip[data-filter="${key}"]`);
+        if (filterChip) {
+          filterChip.style.background = color + '22';
+          filterChip.style.color = color;
+          filterChip.style.borderColor = color + '44';
+        }
+        // Update color circle in editor
         const circle = document.querySelector(`.cat-editor-item[data-cat-key="${key}"] .cat-editor-color`);
         if (circle) circle.style.background = color;
-        // Re-render
+        // Update hidden color input in editor
+        const colorInput = document.querySelector(`.cat-editor-item[data-cat-key="${key}"] .cat-editor-color-input`);
+        if (colorInput) colorInput.value = color;
+        // Re-render ideas and calendar
         if (document.getElementById('view-ideas').classList.contains('active')) {
           renderIdeas();
         }
