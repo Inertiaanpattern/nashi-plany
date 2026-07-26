@@ -684,6 +684,56 @@
     // Все категории (базовые + кастомные)
     let categories = { ...baseCategories };
 
+    function saveCategoriesToStorage() {
+      var customCats = {};
+      Object.keys(categories).forEach(function(key) {
+        if (!baseCategories[key]) {
+          customCats[key] = categories[key];
+        }
+      });
+      localStorage.setItem('customCategories', JSON.stringify(customCats));
+    }
+
+    function loadCategoriesFromStorage() {
+      var stored = localStorage.getItem('customCategories');
+      if (!stored) return;
+      try {
+        var customCats = JSON.parse(stored);
+        Object.keys(customCats).forEach(function(key) {
+          if (!categories[key]) {
+            categories[key] = customCats[key];
+            addCategoryToUIFromStorage(key, customCats[key]);
+          }
+        });
+      } catch(e) {}
+    }
+
+    function addCategoryToUIFromStorage(key, cat) {
+      // Add to modal
+      var div = document.createElement('div');
+      div.className = 'cat-option cat-custom';
+      div.dataset.cat = key;
+      div.style.background = (cat.bg || (cat.color ? cat.color + '22' : '#f5f5f5'));
+      div.style.color = cat.color || '#666';
+      div.onclick = function() { selectCategory(this); };
+      div.textContent = '✨ ' + cat.name;
+      var container = document.getElementById('categoryOptions');
+      if (container) container.appendChild(div);
+      // Add to filters
+      var filterDiv = document.createElement('div');
+      filterDiv.className = 'filter-chip';
+      filterDiv.onclick = function() { filterIdeas(key); };
+      filterDiv.dataset.filter = key;
+      filterDiv.textContent = cat.name;
+      if (cat.color) {
+        filterDiv.style.background = (cat.bg || cat.color + '22');
+        filterDiv.style.color = cat.color;
+        filterDiv.style.borderColor = cat.color + '44';
+      }
+      var filterContainer = document.getElementById('ideasFilter');
+      if (filterContainer) filterContainer.appendChild(filterDiv);
+    }
+
     let currentDate = new Date();
     let selectedCategory = 'excursions';
     let selectedAuthor = 'Я';
@@ -1660,6 +1710,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // Load custom categories from localStorage
+      loadCategoriesFromStorage();
       // Long-press on filter chips in Ideas tab to open category editor
       var ideasFilter = document.getElementById('ideasFilter');
       if (ideasFilter) {
@@ -1829,6 +1881,8 @@
           const emoji = baseCategories[key] ? catOption.textContent.match(/^[^\s]+/) : '✨';
           catOption.textContent = emoji + ' ' + newName;
         }
+        // Save to localStorage
+        saveCategoriesToStorage();
         // Re-render ideas if visible
         if (document.getElementById('view-ideas').classList.contains('active')) {
           renderIdeas();
@@ -1860,6 +1914,8 @@
         // Update hidden color input in editor
         const colorInput = document.querySelector(`.cat-editor-item[data-cat-key="${key}"] .cat-editor-color-input`);
         if (colorInput) colorInput.value = color;
+        // Save to localStorage
+        saveCategoriesToStorage();
         // Re-render ideas and calendar
         if (document.getElementById('view-ideas').classList.contains('active')) {
           renderIdeas();
@@ -1884,6 +1940,8 @@
       if (catOption) catOption.remove();
       const filterChip = document.querySelector(`.filter-chip[data-filter="${key}"]`);
       if (filterChip) filterChip.remove();
+      // Save to localStorage
+      saveCategoriesToStorage();
       // Re-render
       renderCategoryEditor();
       if (document.getElementById('view-ideas').classList.contains('active')) {
@@ -1919,6 +1977,8 @@
       filterDiv.dataset.filter = key;
       filterDiv.textContent = name;
       document.getElementById('ideasFilter').appendChild(filterDiv);
+      // Save to localStorage
+      saveCategoriesToStorage();
       // Save to server
       saveCategoryToServer(key, name);
       // Clear input and re-render editor
